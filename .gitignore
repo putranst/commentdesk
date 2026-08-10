@@ -1,0 +1,5 @@
+commentdesk/
+.vercel/
+__pycache__/
+*.db
+.DS_Store
