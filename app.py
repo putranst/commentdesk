@@ -84,6 +84,24 @@ def init_db():
                     )
         wb.close()
     c.commit()
+
+    # Also import from data.json if it exists and has descriptions / thumbnails
+    DATA_JSON = ROOT / "data.json"
+    if DATA_JSON.exists():
+        import json as _json
+        _data = _json.loads(DATA_JSON.read_text())
+        for p in _data:
+            pid = p["id"]
+            # Update thumbnail and description
+            if p.get("thumb"):
+                c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (p["thumb"], pid))
+            if p.get("description"):
+                c.execute("UPDATE posts SET description = ? WHERE id = ?", (p["description"], pid))
+            # Upsert comments (replace shorter ones with longer ones)
+            for cmt in p.get("comments", []):
+                c.execute("INSERT OR REPLACE INTO comments(id, post_id, body) VALUES((SELECT id FROM comments WHERE post_id = ? AND body = ?), ?, ?)",
+                    (pid, cmt, pid, cmt))
+    c.commit()
     c.close()
 
     # Migrate: add assigned_at if missing
