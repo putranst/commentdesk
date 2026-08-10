@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: commentdesk
+    env: python
+    buildCommand: ""
+    startCommand: python3 app.py
+    plan: free
