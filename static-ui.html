@@ -1,13 +1,4 @@
-#!/usr/bin/env python3
-"""Convert data.json + template into a self-contained static index.html."""
-from pathlib import Path
-import json
-
-ROOT = Path(__file__).resolve().parent
-DATA = json.loads((ROOT / "data.json").read_text())
-JSON_EMBED = json.dumps(DATA, ensure_ascii=False)
-
-HTML_TEMPLATE = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
 <style>
 :root{
   --bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);
@@ -241,8 +232,3 @@ window.openModal=openModal;window.doAssign=doAssign;window.doCopy=doCopy;window.
 boot();
 })();
 </script></body></html>
-'''
-
-HTML = HTML_TEMPLATE.replace('__POSTS_JSON__', JSON_EMBED)
-(ROOT / "index.html").write_text(HTML, encoding="utf-8")
-print(f"Generated index.html ({len(HTML)} bytes)")

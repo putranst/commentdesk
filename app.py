@@ -172,129 +172,345 @@ def send(handler, status, body, content_type="application/json", extra=None):
 # ---------------------------------------------------------------------------
 # HTML (single-page SPA injected inline)
 # ---------------------------------------------------------------------------
-HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Comment Desk</title>
+HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
 <style>
-:root{--bg:#f3f4f6;--surface:#fff;--ink:#111827;--muted:#6b7280;--brand:#4f46e5;--line:#e5e7eb;--radius:18px;--shadow:0 2px 20px rgba(0,0,0,.05)}
+/* ── Design Tokens ── */
+:root{
+  --bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);
+  --ink:#fafafa;--muted:#a1a1aa;--line:rgba(255,255,255,.06);
+  --brand:#818cf8;--brand2:#c084fc;--brand3:#f472b6;
+  --radius:24px;--radius-sm:16px;
+  --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
 *,*::before,*::after{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
-/* ------ auth ------ */
-.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.auth-box{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:36px 28px;max-width:440px;width:100%;text-align:center}
-.auth-box .icon{font-size:42px;margin-bottom:6px}
-.auth-box h1{font-size:26px;margin:0 0 4px;font-weight:800;letter-spacing:-.3px}
-.auth-box .tag{color:var(--muted);font-size:14px;margin-bottom:22px}
-.alert{background:#eef2ff;border-radius:12px;padding:14px 16px;color:#4338ca;font-size:13px;line-height:1.5;margin-bottom:22px;text-align:left}
-input{font:inherit;width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:14px;outline:none;margin-bottom:14px;transition:border-color .2s;font-size:15px}
-input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(79,70,229,.08)}
-.btn{font:inherit;font-weight:700;cursor:pointer;transition:all .15s;border:none}
-.btn-primary{width:100%;padding:14px;background:var(--brand);color:#fff;border-radius:14px;font-size:15px;letter-spacing:-.2px}
-.btn-primary:active{transform:scale(.98);opacity:.92}
-.btn-ghost{background:0;color:var(--muted);padding:8px 12px;font-size:13px}
-.btn-ghost:hover{color:var(--ink)}
-.err-text{color:#ef4444;font-size:13px;margin-top:6px}
-/* ------ workspace ------ */
-.app-v{display:none}
-.app-v.active{display:flex;flex-direction:column}
-.toolbar{background:#0f172a;color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:20}
-.toolbar h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.2px}
-.toolbar .hi{font-size:13px;opacity:.75}
-.content-v{padding:20px;max-width:960px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:22px}
-/* post grid */
-.sec-label{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:0}
-.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.pcard{background:var(--surface);border-radius:14px;overflow:hidden;border:2.5px solid transparent;cursor:pointer;box-shadow:0 1px 8px rgba(0,0,0,.03);transition:border-color .2s,box-shadow .2s,transform .15s}
-.pcard:active{transform:scale(.97)}
-.pcard.sel{border-color:var(--brand);box-shadow:0 0 0 5px rgba(79,70,229,.12)}
-.pcard img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e5e7eb}
-.pcard .lbl{padding:10px 12px 4px;font-size:13px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pcard .cnt{font-size:12px;color:var(--muted);padding:0 12px 10px}
-/* hero */
-.hero-block{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:none;border:2px solid var(--line)}
-.hero-block.on{display:block;border-color:var(--brand)}
-.hero-block img{width:100%;max-height:360px;object-fit:cover;display:block}
-.hero-info{padding:18px 22px}
-.hero-info h2{margin:0 0 4px;font-size:20px;font-weight:800;letter-spacing:-.3px}
-.hero-info .url-line{font-size:12px;color:var(--muted);word-break:break-all}
-/* comment area */
-.cmts{display:none}
-.cmts.on{display:block}
-.cmts-head{background:var(--surface);border-radius:var(--radius);padding:18px 22px;box-shadow:var(--shadow);border:2px solid var(--line);margin-bottom:12px}
-.cmts-head .rule{font-size:14px;color:var(--muted);margin:0 0 14px;line-height:1.6}
-.cmts-head .rule b{color:var(--brand);font-weight:700}
-.cmts-btn-row{display:flex;gap:10px;flex-wrap:wrap}
-.cmts-btn-row .btn-primary{width:auto;padding:12px 22px}
-.cmts-btn-row .btn-primary:disabled{opacity:.45;cursor:not-allowed;background:#9ca3af}
-.cmts-list{display:flex;flex-direction:column;gap:10px}
-.cmt-card{background:var(--surface);border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;box-shadow:0 1px 10px rgba(0,0,0,.03);border:1.5px solid var(--line);transition:border-color .2s}
-.cmt-card:hover{border-color:var(--brand)}
-.cmt-card .body{padding:0;margin:0;flex:1;font-size:14px;line-height:1.7}
-.cmt-card .tag{font-size:11px;background:#eef2ff;color:#4338ca;padding:5px 11px;border-radius:99px;white-space:nowrap;font-weight:600}
-.cmt-card .cpy{padding:10px 18px;font-size:13px;background:var(--brand);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;transition:all .15s}
-.cmt-card .cpy:active{transform:scale(.95)}
-.cpy.done{background:#059669 !important}
-.empty-msg{padding:28px;text-align:center;color:var(--muted);font-size:14px;background:var(--surface);border-radius:var(--radius);border:2px dashed var(--line)}
-@media(min-width:600px){.pgrid{grid-template-columns:repeat(3,1fr);gap:12px}}
-@media(min-width:860px){.pgrid{grid-template-columns:repeat(4,1fr);gap:14px}}
+body{
+  margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--font);
+  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%,rgba(99,102,241,.12),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(192,132,252,.08),transparent),
+    radial-gradient(ellipse 50% 30% at 50% 50%,rgba(244,114,182,.05),transparent);
+}
+/* ── Auth ── */
+.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.auth-card{
+  background:var(--surface);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
+  border:1px solid var(--line);border-radius:var(--radius);padding:48px 32px;
+  max-width:420px;width:100%;text-align:center;animation:fadeUp .6s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.auth-card .icon{font-size:56px;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(99,102,241,.4))}
+.auth-card h1{font-size:28px;margin:0 0 4px;font-weight:800;letter-spacing:-.5px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2),var(--brand3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-card .tag{color:var(--muted);font-size:14px;margin-bottom:28px}
+.auth-card .alert{
+  background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);
+  border-radius:var(--radius-sm);padding:14px 18px;color:#a5b4fc;font-size:13px;
+  line-height:1.5;margin-bottom:24px;text-align:left
+}
+.auth-card input{
+  font:inherit;width:100%;padding:15px 18px;
+  background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-sm);
+  outline:none;margin-bottom:16px;color:var(--ink);font-size:15px;transition:all .2s;
+}
+.auth-card input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+.btn{font:inherit;font-weight:700;cursor:pointer;transition:all .2s;border:none;outline:none}
+.btn:active{transform:scale(.97)}
+.btn-primary{
+  width:100%;padding:16px;border-radius:var(--radius-sm);font-size:16px;letter-spacing:-.2px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+  box-shadow:0 4px 24px rgba(99,102,241,.25);
+}
+.btn-primary:hover{box-shadow:0 6px 32px rgba(99,102,241,.35)}
+.err-text{color:#f87171;font-size:13px;margin-top:8px}
+/* ── App Layout ── */
+.app-v{display:none;flex-direction:column;min-height:100vh}
+.app-v.active{display:flex}
+/* Top bar */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;padding:16px 24px;
+  background:rgba(9,9,11,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;
+}
+.topbar h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.2px}
+.topbar .hi{font-size:13px;color:var(--muted)}
+.btn-ghost{background:0;color:var(--muted);padding:8px 16px;font-size:13px;border-radius:12px}
+.btn-ghost:hover{color:var(--ink);background:var(--surface2)}
+/* ── Carousel ── */
+.carousel-section{padding:20px 0 12px;flex:0 0 auto;position:relative}
+.carousel-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 24px 16px}
+.carousel-viewport{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:0 24px;scrollbar-width:none}
+.carousel-viewport::-webkit-scrollbar{display:none}
+.carousel-track{display:flex;gap:14px;padding:8px 0;align-items:stretch}
+/* Card */
+.ccard{
+  flex:0 0 280px;scroll-snap-align:center;border-radius:var(--radius);overflow:hidden;
+  background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--line);cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);
+  position:relative;height:60vh;display:flex;flex-direction:column;
+}
+.ccard:hover{transform:translateY(-4px);border-color:rgba(129,140,248,.3);box-shadow:0 8px 40px rgba(99,102,241,.15)}
+.ccard:active{transform:scale(.97)}
+.ccard img{width:100%;height:65%;object-fit:cover;display:block;background:var(--surface2)}
+.ccard .card-body{padding:16px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.ccard .card-title{font-size:14px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ccard .card-meta{font-size:12px;color:var(--muted);margin-top:6px}
+/* Done state */
+.ccard.done{opacity:.45;filter:grayscale(.6)}
+.ccard.done::after{
+  content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:64px;font-weight:900;color:#22c55e;z-index:5;
+  text-shadow:0 0 40px rgba(34,197,94,.5);
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+.ccard.done::before{
+  content:'';position:absolute;inset:0;background:rgba(9,9,11,.5);z-index:4
+}
+@keyframes popIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+/* Carousel dots */
+.carousel-dots{display:flex;justify-content:center;gap:8px;padding:16px 0 8px}
+.carousel-dots .dot{width:8px;height:8px;border-radius:99px;background:var(--line);transition:all .3s}
+.carousel-dots .dot.active{background:var(--brand);width:24px}
+/* ── Modal ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.modal-overlay.open{display:flex;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-sheet{
+  width:100%;max-width:560px;max-height:92vh;background:var(--bg2);
+  border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;
+  display:flex;flex-direction:column;
+  border:1px solid var(--line);border-bottom:none;
+  animation:slideUp .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--line);
+  background:rgba(18,18,23,.95);backdrop-filter:blur(20px);
+}
+.modal-topbar .mbtn{background:0;color:var(--muted);border:none;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:8px 12px;border-radius:12px;transition:all .2s}
+.modal-topbar .mbtn:hover{color:var(--ink);background:var(--surface2)}
+.modal-topbar .mtitle{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;padding:0 8px}
+.modal-hero{position:relative;overflow:hidden}
+.modal-hero img{width:100%;max-height:240px;object-fit:cover;display:block}
+.modal-hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:60px;
+  background:linear-gradient(transparent,var(--bg2));
+}
+.modal-body{flex:1;overflow-y:auto;padding:20px}
+.modal-body .info-line{font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:20px}
+/* Comment card in modal */
+.cmt-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:20px;margin-bottom:20px;animation:fadeUp .4s ease;
+}
+.cmt-card .cmt-body{font-size:15px;line-height:1.7;margin:0 0 16px;color:var(--ink)}
+.cmt-card .cmt-tag{display:inline-block;font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;margin-bottom:14px}
+.cmt-tag.copied{background:rgba(34,197,94,.12);color:#22c55e}
+.cmt-tag.assigned{background:rgba(99,102,241,.12);color:#818cf8}
+.cmt-card .btn-copy{
+  width:100%;padding:14px;font:inherit;font-size:14px;font-weight:700;border:none;border-radius:12px;
+  cursor:pointer;transition:all .2s;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+}
+.cmt-card .btn-copy:active{transform:scale(.97)}
+.cmt-card .btn-copy.done{background:linear-gradient(135deg,#22c55e,#16a34a) !important}
+/* Dominant CTA */
+.dominant-cta{
+  padding:16px 20px;border-top:1px solid var(--line);
+  background:rgba(18,18,23,.95);backdrop-filter:blur(20px);
+}
+.dominant-cta .btn-ambil{
+  width:100%;padding:18px;font:inherit;font-size:16px;font-weight:800;letter-spacing:-.2px;
+  border:none;border-radius:16px;cursor:pointer;transition:all .2s;
+  background:linear-gradient(135deg,var(--brand),var(--brand2),var(--brand3));
+  color:#fff;box-shadow:0 4px 30px rgba(99,102,241,.3);
+}
+.dominant-cta .btn-ambil:hover{box-shadow:0 6px 40px rgba(99,102,241,.45)}
+.dominant-cta .btn-ambil:active{transform:scale(.97)}
+.dominant-cta .btn-ambil:disabled{
+  opacity:.5;cursor:not-allowed;background:var(--surface2);box-shadow:none;color:var(--muted)
+}
+.empty-msg{padding:32px;text-align:center;color:var(--muted);font-size:14px}
+/* ── Responsive ── */
+@media(min-width:600px){.ccard{flex:0 0 320px}}
+@media(min-width:860px){.ccard{flex:0 0 340px}}
 </style></head><body>
+
+<!-- ── Auth ── -->
 <div id="auth-v" class="auth-pg">
-  <div class="auth-box">
+  <div class="auth-card">
     <div class="icon">💬</div>
     <h1>Comment Desk</h1>
     <p class="tag">Masuk pakai handle tim internal</p>
-    <div class="alert">Komentar cuma buat di-review & di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
+    <div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
     <input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
     <button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
     <p id="auth-err" class="err-text"></p>
   </div>
 </div>
+
+<!-- ── App ── -->
 <div id="app-v" class="app-v">
-  <div class="toolbar">
+  <div class="topbar">
     <h1>💬 Comment Desk</h1>
     <span class="hi" id="hi"></span>
     <button class="btn btn-ghost" onclick="doLogout()">Keluar</button>
   </div>
-  <div class="content-v">
-    <section>
-      <p class="sec-label">Pilih Postingan</p>
-      <div id="pgrid" class="pgrid"></div>
-    </section>
-    <section id="hero" class="hero-block"></section>
-    <section id="cmts" class="cmts">
-      <div class="cmts-head">
-        <p class="rule">📋 Kamu cuma bisa ambil <b>1 komentar</b> per post. Pilih post → ambil komentar → copy → lanjut ke post lain.</p>
-        <div class="cmts-btn-row">
-          <button class="btn btn-primary" id="abtn" onclick="doAssign()">🎲 Ambil 1 komentar acak</button>
-        </div>
+
+  <!-- Carousel -->
+  <section class="carousel-section">
+    <p class="carousel-label">Pilih Postingan</p>
+    <div class="carousel-viewport" id="carousel-vp">
+      <div class="carousel-track" id="carousel-track"></div>
+    </div>
+    <div class="carousel-dots" id="carousel-dots"></div>
+  </section>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-sheet" id="modal-sheet">
+      <div class="modal-topbar">
+        <button class="mbtn" onclick="closeModal()">← Kembali</button>
+        <span class="mtitle" id="modal-title"></span>
+        <button class="mbtn" onclick="closeModal()">✕ Tutup</button>
       </div>
-      <div id="clist" class="cmts-list"></div>
-    </section>
+      <div class="modal-body" id="modal-body">
+        <div class="modal-hero"><img id="modal-img" src="" alt=""></div>
+        <p class="info-line" id="modal-url"></p>
+        <div id="modal-cmt"></div>
+      </div>
+      <div class="dominant-cta">
+        <button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button>
+      </div>
+    </div>
   </div>
 </div>
+
 <script>
 const $=id=>document.getElementById(id);
-const S={posts:[],post:null,has:false};
+const S={posts:[],post:null,has:false,done:new Set()};
 
-async function api(path,opt={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});const d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");return d}
+async function api(path,opt={}){
+  const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});
+  const d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");return d
+}
 
-async function boot(){try{const m=await api("/api/me");if(m.user){$("auth-v").style.display="none";$("app-v").classList.add("active");$("hi").textContent="Halo, "+m.user.handle;S.posts=m.posts;renderGrid()}}catch(_){}}
+async function boot(){
+  try{
+    const m=await api("/api/me");
+    if(m.user){
+      $("auth-v").style.display="none";$("app-v").classList.add("active");
+      $("hi").textContent="Halo, "+m.user.handle;
+      S.posts=m.posts;
+      // load which posts have copied assignments
+      for(const p of S.posts){
+        try{
+          const a=await api("/api/assignments?post_id="+p.id);
+          if(a.items.some(x=>x.status==="copied"))S.done.add(p.id);
+        }catch(_){}
+      }
+      renderCarousel();
+    }
+  }catch(_){}
+}
 
-function renderGrid(){$("pgrid").innerHTML=S.posts.map(p=>`<div class="pcard" id="pc-${p.id}" onclick="select(${p.id})"><img src="${esc(p.thumbnail)}" alt="${esc(p.title)}" loading="lazy" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=width:100%;aspect-ratio:1;background:#e5e7eb;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:24px;border-radius:14px>📷</div>')"><div class="lbl">${esc(p.title)}</div><div class="cnt">${p.count} komentar</div></div>`).join("")}
+function renderCarousel(){
+  const track=$("carousel-track"),dots=$("carousel-dots");
+  track.innerHTML=S.posts.map(p=>{
+    const isDone=S.done.has(p.id);
+    return `<div class="ccard${isDone?' done':''}" id="cc-${p.id}" onclick="openModal(${p.id})">`+
+      `<img src="${esc(p.thumbnail)}" alt="${esc(p.title)}" loading="lazy" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=height:65%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:40px>📷</div>')">`+
+      `<div class="card-body"><div class="card-title">${esc(p.title)}</div><div class="card-meta">${p.count} komentar${isDone?' • ✓ Selesai':''}</div></div>`+
+      `</div>`;
+  }).join("");
+  dots.innerHTML=S.posts.map((_,i)=>`<div class="dot${i===0?' active':''}"></div>`).join("");
+  // scroll snap listener
+  const vp=$("carousel-vp");
+  vp.onscroll=()=>{
+    const idx=Math.round(vp.scrollLeft/(280+14));
+    dots.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  };
+  // snap to middle card on load
+  if(S.posts.length>2){
+    const mid=Math.floor(S.posts.length/2);
+    setTimeout(()=>vp.scrollTo({left:mid*(280+14),behavior:'smooth'}),400);
+  }
+}
 
-async function select(id){S.post=S.posts.find(x=>x.id===id);if(!S.post)return;document.querySelectorAll(".pcard").forEach(c=>c.classList.remove("sel"));$("pc-"+id).classList.add("sel");const h=$("hero");h.classList.add("on");h.innerHTML=`<img src="${esc(S.post.thumbnail)}" alt="${esc(S.post.title)}" onerror="this.style.display='none'"><div class="hero-info"><h2>${esc(S.post.title)}</h2><div class="url-line">${esc(S.post.source_url)}</div></div>`;setTimeout(()=>h.scrollIntoView({behavior:"smooth",block:"start"}),120);await reloadCmt()}
+async function openModal(id){
+  S.post=S.posts.find(x=>x.id===id);if(!S.post)return;
+  $("modal-title").textContent=S.post.title;
+  $("modal-img").src=S.post.thumbnail||'';
+  $("modal-img").onerror=function(){this.style.display='none'};
+  $("modal-url").textContent=S.post.source_url||'';
+  $("modal-overlay").classList.add("open");
+  document.body.style.overflow='hidden';
+  await reloadModalCmt();
+}
 
-async function reloadCmt(){$("cmts").classList.add("on");try{const d=await api("/api/assignments?post_id="+S.post.id);S.has=d.items.length>0;$("abtn").disabled=S.has;$("abtn").textContent=S.has?"✓ Sudah ambil 1 komentar":"🎲 Ambil 1 komentar acak";$("clist").innerHTML=d.items.length?d.items.map(x=>`<div class="cmt-card"><p class="body">${esc(x.body)}</p><span class="tag">${x.status==="copied"?"✓ di-copy":"baru"}</span><button class="cpy" onclick="doCopy(${x.id},this)">Copy</button></div>`).join(""):'<div class="empty-msg">Klik tombol di atas buat dapat satu komentar acak ✨</div>'}catch(e){$("clist").innerHTML='<div class="empty-msg">Gagal memuat. Coba refresh.</div>'}}
+async function reloadModalCmt(){
+  try{
+    const d=await api("/api/assignments?post_id="+S.post.id);
+    S.has=d.items.length>0;
+    const btn=$("btn-ambil");
+    btn.disabled=S.has;
+    btn.textContent=S.has?"✓ Sudah Ambil 1 Komentar":"🎲 Ambil & Copy Komentar";
+    $("modal-cmt").innerHTML=d.items.length
+      ?d.items.map(x=>`<div class="cmt-card"><p class="cmt-body">${esc(x.body)}</p><span class="cmt-tag ${x.status}">${x.status==='copied'?'✓ Sudah di-copy':'📋 Baru di-assign'}</span><button class="btn-copy${x.status==='copied'?' done':''}" onclick="doCopy(${x.id},this)">${x.status==='copied'?'Tersalin ✓':'Copy ke Clipboard'}</button></div>`).join("")
+      :'<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>';
+  }catch(e){$("modal-cmt").innerHTML='<div class="empty-msg">Gagal memuat.</div>'}
+}
 
-async function doAssign(){if(S.has)return;try{await api("/api/assign",{method:"POST",body:JSON.stringify({post_id:S.post.id})});await reloadCmt()}catch(e){alert(e.message)}}
+function closeModal(){
+  $("modal-overlay").classList.remove("open");
+  document.body.style.overflow='';
+  // sync done state to carousel
+  S.done.forEach(pid=>{const c=document.getElementById("cc-"+pid);if(c)c.classList.add("done")});
+}
 
-async function doCopy(id,btn){try{const d=await api("/api/copy",{method:"POST",body:JSON.stringify({assignment_id:id})});await navigator.clipboard.writeText(d.body);btn.textContent="Tersalin ✓";btn.classList.add("done");setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("done")},1800);await reloadCmt()}catch(_){}}
+async function doAssign(){
+  if(S.has||!S.post)return;
+  try{
+    await api("/api/assign",{method:"POST",body:JSON.stringify({post_id:S.post.id})});
+    await reloadModalCmt();
+  }catch(e){alert(e.message)}
+}
 
-async function doLogin(){const h=$("hinp").value.trim();if(!h)return $("auth-err").textContent="Isi handle dulu ya";try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}catch(e){$("auth-err").textContent=e.message}}
+async function doCopy(id,btn){
+  try{
+    const d=await api("/api/copy",{method:"POST",body:JSON.stringify({assignment_id:id})});
+    try{await navigator.clipboard.writeText(d.body)}catch(_){}
+    btn.textContent="Tersalin ✓";btn.classList.add("done");
+    S.done.add(S.post.id);
+    // update carousel card immediately
+    const card=document.getElementById("cc-"+S.post.id);if(card)card.classList.add("done");
+    setTimeout(()=>{btn.textContent="Copy ke Clipboard";btn.classList.remove("done")},2000);
+    await reloadModalCmt();
+  }catch(_){}
+}
+
+async function doLogin(){
+  const h=$("hinp").value.trim();
+  if(!h)return $("auth-err").textContent="Isi handle dulu ya";
+  try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}
+  catch(e){$("auth-err").textContent=e.message}
+}
 
 async function doLogout(){await api("/api/logout",{method:"POST"});location.reload()}
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 boot();
-</script></body></html>'''
+</script></body></html>
+'''
 
 # ---------------------------------------------------------------------------
 # Admin HTML
