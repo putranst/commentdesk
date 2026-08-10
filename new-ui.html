@@ -44,7 +44,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .ccard.done::before{content:'';position:absolute;inset:0;background:rgba(9,9,11,.5);z-index:4}
 @keyframes popIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 /* ── Stats Bar ── */
-.stats-bar{display:flex;gap:12px;padding:0 24px 16px;flex:0 0 auto;max-width:500px;margin:0 auto;width:100%}
+.stats-bar{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 24px;max-width:500px;margin:0 auto;width:100%}
 .stat-item{flex:1;background:rgba(255,255,255,.03);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;padding:18px 14px;text-align:center;transition:all .3s}
 .stat-item:nth-child(1){border-color:rgba(129,140,248,.15)}.stat-item:nth-child(2){border-color:rgba(192,132,252,.15)}.stat-item:nth-child(3){border-color:rgba(244,114,182,.15)}
 .stat-item .val{font-size:28px;font-weight:800;letter-spacing:-.5px}

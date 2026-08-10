@@ -246,6 +246,364 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .ccard.done::before{content:'';position:absolute;inset:0;background:rgba(9,9,11,.5);z-index:4}
 @keyframes popIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 /* ── Stats Bar ── */
+.stats-bar{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 24px;max-width:500px;margin:0 auto;width:100%}
+.stat-item{flex:1;background:rgba(255,255,255,.03);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;padding:18px 14px;text-align:center;transition:all .3s}
+.stat-item:nth-child(1){border-color:rgba(129,140,248,.15)}.stat-item:nth-child(2){border-color:rgba(192,132,252,.15)}.stat-item:nth-child(3){border-color:rgba(244,114,182,.15)}
+.stat-item .val{font-size:28px;font-weight:800;letter-spacing:-.5px}
+.stat-item:nth-child(1) .val{background:linear-gradient(135deg,#818cf8,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item:nth-child(2) .val{background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item:nth-child(3) .val{background:linear-gradient(135deg,#f472b6,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-sheet{width:100%;max-width:560px;max-height:94vh;background:var(--bg2);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line);border-bottom:none;animation:slideUp .4s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(18,18,23,.95);backdrop-filter:blur(20px);flex-shrink:0}
+.modal-topbar .mbtn{background:0;color:var(--muted);border:none;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:8px 12px;border-radius:12px;transition:all .2s}
+.modal-topbar .mbtn:hover{color:var(--ink);background:var(--surface2)}
+.modal-topbar .mtitle{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;padding:0 6px}
+.modal-hero{position:relative;overflow:hidden;flex:0 0 44vh;min-height:200px}
+.modal-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.modal-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg2));pointer-events:none}
+.modal-body{flex:1;overflow-y:auto;padding:0}
+.modal-body .post-desc{padding:16px 20px 8px;font-size:13px;line-height:1.7;color:var(--muted);border-bottom:1px solid var(--line);white-space:pre-line}
+.modal-body .info-line{font-size:11px;color:var(--muted);word-break:break-all;padding:8px 20px 0}
+.modal-body .cmt-section{padding:16px 20px 20px}
+.cmt-section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px}
+.cmt-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;margin-bottom:12px;animation:fadeUp .4s ease}
+.cmt-card .cmt-body{font-size:14px;line-height:1.7;margin:0 0 14px;color:var(--ink)}
+.cmt-card .cmt-tag{display:inline-block;font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;margin-bottom:14px}
+.cmt-tag.copied{background:rgba(34,197,94,.12);color:#22c55e}.cmt-tag.assigned{background:rgba(99,102,241,.12);color:#818cf8}
+.cmt-card .btn-copy{width:100%;padding:13px;font:inherit;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+.cmt-card .btn-copy:active{transform:scale(.97)}.cmt-card .btn-copy.done{background:linear-gradient(135deg,#22c55e,#16a34a)!important}
+.dominant-cta{padding:14px 20px;border-top:1px solid var(--line);background:rgba(18,18,23,.95);backdrop-filter:blur(20px);flex-shrink:0}
+.dominant-cta .btn-ambil{width:100%;padding:16px;font:inherit;font-size:16px;font-weight:800;letter-spacing:-.2px;border:none;border-radius:16px;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--brand),var(--brand2),var(--brand3));color:#fff;box-shadow:0 4px 30px rgba(99,102,241,.3)}
+.dominant-cta .btn-ambil:hover{box-shadow:0 6px 40px rgba(99,102,241,.45)}
+.dominant-cta .btn-ambil:active{transform:scale(.97)}
+.dominant-cta .btn-ambil:disabled{opacity:.5;cursor:not-allowed;background:var(--surface2);box-shadow:none;color:var(--muted)}
+.empty-msg{padding:32px;text-align:center;color:var(--muted);font-size:14px}
+@media(min-width:600px){.ccard{flex:0 0 300px;height:62vh}.carousel-viewport{padding:0 calc(50vw - 165px)}}
+@media(min-width:860px){.ccard{flex:0 0 320px}.carousel-viewport{padding:0 calc(50vw - 175px)}}
+</style></head><body>
+
+<div id="auth-v" class="auth-pg"><div class="auth-card">
+<div class="icon">💬</div><h1>Comment Desk</h1><p class="tag">Masuk pakai handle tim internal</p>
+<div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
+<input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
+<button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
+<p id="auth-err" class="err-text"></p>
+</div></div>
+
+<div id="app-v" class="app-v"><div class="topbar"><h1>💬 Comment Desk</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
+<section class="carousel-section"><p class="carousel-label">Pilih Postingan</p>
+<div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
+<div class="stats-bar" id="stats-bar"></div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-topbar">
+<button class="mbtn" onclick="closeModal()">← Kembali</button><span class="mtitle" id="modal-title"></span><button class="mbtn" onclick="closeModal()">✕ Tutup</button>
+</div><div class="modal-hero"><img id="modal-img" src="" alt=""></div><div class="modal-body">
+<p class="info-line" id="modal-url"></p><div class="post-desc" id="modal-desc"></div>
+<div class="cmt-section"><p class="cmt-section-label">💬 Komentar</p><div id="modal-cmt"></div></div>
+</div><div class="dominant-cta"><button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button></div></div></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const S={posts:[],post:null,has:false,done:new Set()};
+
+async function api(path,opt={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});const d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");return d}
+
+async function boot(){
+  try{const m=await api("/api/me");
+    if(m.user){$("auth-v").style.display="none";$("app-v").classList.add("active");$("hi").textContent="Halo, "+m.user.handle;S.posts=m.posts;
+    for(const p of S.posts){try{const a=await api("/api/assignments?post_id="+p.id);if(a.items.some(x=>x.status==="copied"))S.done.add(p.id)}catch(_){}}
+    renderCarousel();renderStats()}
+  }catch(_){}}
+
+function renderCarousel(){
+  const track=$("carousel-track"),cw=window.innerWidth<600?300:window.innerWidth<860?320:340;
+  track.innerHTML=S.posts.map(p=>{const isDone=S.done.has(p.id);return '<div class="ccard'+(isDone?' done':'')+'" id="cc-'+p.id+'" onclick="openModal('+p.id+')"><img src="'+esc(p.thumbnail)+'" alt="'+esc(p.title)+'" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div style=height:62%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:36px>📷</div>\')"><div class="card-body"><div class="card-title">'+esc(p.title)+'</div><div class="card-meta">'+p.count+' komentar'+(isDone?' • ✓':'')+'</div></div></div>'}).join("");
+  const vp=$("carousel-vp");vp.onscroll=()=>updateActive();
+  if(S.posts.length>2){const mid=Math.floor(S.posts.length/2);setTimeout(()=>vp.scrollTo({left:mid*(cw+16),behavior:'smooth'}),400)}
+  setTimeout(updateActive,600);
+}
+
+function updateActive(){
+  const cards=document.querySelectorAll('.ccard'),vp=$("carousel-vp"),vpr=vp.getBoundingClientRect();
+  let best=null,bestDist=Infinity;
+  cards.forEach(c=>{const cr=c.getBoundingClientRect(),ccx=cr.left+cr.width/2,vcx=vpr.left+vpr.width/2,dist=Math.abs(ccx-vcx);c.classList.remove('active');if(dist<bestDist){bestDist=dist;best=c}});
+  if(best)best.classList.add('active');
+}
+
+function renderStats(){const t=S.posts.length,d=S.done.size,r=t-d;$("stats-bar").innerHTML='<div class="stat-item"><div class="val">'+t+'</div><div class="lbl">Total Post</div></div><div class="stat-item"><div class="val">'+d+'</div><div class="lbl">Selesai</div></div><div class="stat-item"><div class="val">'+r+'</div><div class="lbl">Tersisa</div></div>'}
+
+async function openModal(id){
+  S.post=S.posts.find(x=>x.id===id);if(!S.post)return;$("modal-title").textContent=S.post.title;
+  $("modal-img").src=S.post.thumbnail||'';$("modal-img").onerror=function(){this.style.display='none'};
+  $("modal-url").textContent=S.post.source_url||'';$("modal-desc").textContent=S.post.description||'';
+  $("modal-overlay").classList.add("open");document.body.style.overflow='hidden';await reloadModalCmt()}
+
+async function reloadModalCmt(){
+  try{const d=await api("/api/assignments?post_id="+S.post.id);S.has=d.items.length>0;const btn=$("btn-ambil");btn.disabled=S.has;btn.textContent=S.has?"✓ Sudah Ambil 1 Komentar":"🎲 Ambil & Copy Komentar";
+  $("modal-cmt").innerHTML=d.items.length?d.items.map(x=>'<div class="cmt-card"><p class="cmt-body">'+esc(x.body)+'</p><span class="cmt-tag '+x.status+'">'+(x.status==='copied'?'✓ Sudah di-copy':'📋 Baru di-assign')+'</span><button class="btn-copy'+(x.status==='copied'?' done':'')+'" onclick="doCopy('+x.id+',this)">'+(x.status==='copied'?'Tersalin ✓':'Copy ke Clipboard')+'</button></div>').join(""):'<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>'}catch(e){$("modal-cmt").innerHTML='<div class="empty-msg">Gagal memuat.</div>'}}
+
+function closeModal(){$("modal-overlay").classList.remove("open");document.body.style.overflow='';S.done.forEach(pid=>{const c=document.getElementById("cc-"+pid);if(c)c.classList.add("done")});renderStats()}
+async function doAssign(){if(S.has||!S.post)return;try{await api("/api/assign",{method:"POST",body:JSON.stringify({post_id:S.post.id})});await reloadModalCmt()}catch(e){alert(e.message)}}
+async function doCopy(id,btn){try{const d=await api("/api/copy",{method:"POST",body:JSON.stringify({assignment_id:id})});try{await navigator.clipboard.writeText(d.body)}catch(_){}btn.textContent="Tersalin ✓";btn.classList.add("done");S.done.add(S.post.id);const card=document.getElementById("cc-"+S.post.id);if(card)card.classList.add("done");renderStats();setTimeout(()=>{btn.textContent="Copy ke Clipboard";btn.classList.remove("done")},2000);await reloadModalCmt()}catch(_){}}
+async function doLogin(){const h=$("hinp").value.trim();if(!h)return $("auth-err").textContent="Isi handle dulu ya";try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}catch(e){$("auth-err").textContent=e.message}}
+async function doLogout(){await api("/api/logout",{method:"POST"});location.reload()}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+window.openModal=openModal;window.doAssign=doAssign;window.doCopy=doCopy;window.doLogin=doLogin;window.doLogout=doLogout;window.closeModal=closeModal;
+boot();
+</script></body></html>
+'''"Comment Desk – internal tool, copy-only. Posts loaded from XLSX."""
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlparse, parse_qs
+from urllib import request as urlreq, error as urlerr
+from pathlib import Path
+import sqlite3, json, secrets, os, re, hashlib, time
+from http import cookies
+from openpyxl import load_workbook
+
+ROOT = Path(__file__).resolve().parent
+DB   = ROOT / "app.db"
+XLSX = ROOT / "duniameutya_last_10_posts_comments.xlsx"
+PORT = int(os.environ.get("PORT", "8765"))
+SESSIONS = {}
+ADMIN_SESSIONS = {}
+ADMIN_PASSWORD = "@poji#1"
+THUMB_CACHE = ROOT / "thumbs"
+THUMB_CACHE.mkdir(exist_ok=True)
+
+# ---------------------------------------------------------------------------
+# database helpers
+# ---------------------------------------------------------------------------
+def db():
+    c = sqlite3.connect(DB)
+    c.row_factory = sqlite3.Row
+    c.execute("PRAGMA foreign_keys = ON")
+    return c
+
+def init_db():
+    c = db()
+    c.executescript("""
+    CREATE TABLE IF NOT EXISTS users(
+        id         INTEGER PRIMARY KEY,
+        handle     TEXT UNIQUE NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS posts(
+        id            INTEGER PRIMARY KEY,
+        sheet         TEXT UNIQUE NOT NULL,
+        source_url    TEXT,
+        title         TEXT,
+        thumbnail_url TEXT DEFAULT '',
+        description   TEXT DEFAULT ''
+    );
+    CREATE TABLE IF NOT EXISTS comments(
+        id      INTEGER PRIMARY KEY,
+        post_id INTEGER NOT NULL REFERENCES posts(id),
+        body    TEXT    NOT NULL,
+        UNIQUE(post_id, body)
+    );
+    CREATE TABLE IF NOT EXISTS assignments(
+        id         INTEGER PRIMARY KEY,
+        user_id    INTEGER NOT NULL REFERENCES users(id),
+        comment_id INTEGER NOT NULL REFERENCES comments(id),
+        status     TEXT    DEFAULT 'assigned',
+        assigned_at TEXT   DEFAULT CURRENT_TIMESTAMP,
+        copied_at  TEXT,
+        UNIQUE(user_id, comment_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_assign_user  ON assignments(user_id);
+    CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
+    """)
+    c.commit()
+
+    # Import XLSX if DB is empty
+    if XLSX.exists() and not c.execute("SELECT 1 FROM posts LIMIT 1").fetchone():
+        wb = load_workbook(XLSX, read_only=True, data_only=True)
+        for ws in wb.worksheets:
+            source = ""
+            for row in list(ws.values)[:4]:
+                if row and len(row) > 7 and row[6] == "Source URL":
+                    source = (row[7] or "").strip()
+            cur = c.execute(
+                "INSERT INTO posts(sheet, source_url, title) VALUES(?,?,?)",
+                (ws.title, source, ws.title.replace("_", " ")),
+            )
+            pid = cur.lastrowid
+            for row in list(ws.values)[1:]:
+                if row and isinstance(row[0], int) and row[1]:
+                    c.execute(
+                        "INSERT OR IGNORE INTO comments(post_id, body) VALUES(?,?)",
+                        (pid, str(row[1])),
+                    )
+        wb.close()
+    c.commit()
+
+    # Also import from data.json if it exists and has descriptions / thumbnails
+    DATA_JSON = ROOT / "data.json"
+    if DATA_JSON.exists():
+        import json as _json
+        _data = _json.loads(DATA_JSON.read_text())
+        for p in _data:
+            pid = p["id"]
+            # Update thumbnail and description
+            if p.get("thumb"):
+                c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (p["thumb"], pid))
+            if p.get("description"):
+                c.execute("UPDATE posts SET description = ? WHERE id = ?", (p["description"], pid))
+            # Upsert comments (replace shorter ones with longer ones)
+            for cmt in p.get("comments", []):
+                c.execute("INSERT OR REPLACE INTO comments(id, post_id, body) VALUES((SELECT id FROM comments WHERE post_id = ? AND body = ?), ?, ?)",
+                    (pid, cmt, pid, cmt))
+    c.commit()
+    c.close()
+
+    # Migrate: add assigned_at if missing
+    try:
+        c = db()
+        c.execute("ALTER TABLE assignments ADD COLUMN assigned_at TEXT DEFAULT CURRENT_TIMESTAMP")
+        c.commit()
+        c.close()
+    except sqlite3.OperationalError:
+        pass  # column already exists
+
+    # Migrate: add description column to posts
+    try:
+        c = db()
+        c.execute("ALTER TABLE posts ADD COLUMN description TEXT DEFAULT ''")
+        c.commit()
+        c.close()
+    except sqlite3.OperationalError:
+        pass  # column already exists
+
+# ---------------------------------------------------------------------------
+# fetch Instagram thumbnails via og:image
+# ---------------------------------------------------------------------------
+def fetch_thumbnails():
+    """Fetch og:image from each post page and store CDN URL in DB."""
+    c = db()
+    posts = c.execute(
+        "SELECT id, source_url, thumbnail_url FROM posts WHERE thumbnail_url = '' OR thumbnail_url IS NULL"
+    ).fetchall()
+    c.close()
+    if not posts:
+        return
+
+    UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
+    fetched = 0
+    for p in posts:
+        url = p["source_url"]
+        if not url:
+            continue
+        try:
+            req = urlreq.Request(url, headers={"User-Agent": UA})
+            html = urlreq.urlopen(req, timeout=12).read().decode("utf-8", errors="ignore")
+            m = re.search(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', html)
+            if m:
+                thumb_url = m.group(1).replace("&amp;", "&")
+                c = db()
+                c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (thumb_url, p["id"]))
+                c.commit()
+                c.close()
+                fetched += 1
+            else:
+                # Try alternate pattern
+                m = re.search(r'og:image[^>]+content="([^"]+)"', html)
+                if m:
+                    thumb_url = m.group(1).replace("&amp;", "&")
+                    c = db()
+                    c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (thumb_url, p["id"]))
+                    c.commit()
+                    c.close()
+                    fetched += 1
+        except Exception as e:
+            # Leave thumbnail empty; UI will use placeholder
+            print(f"  thumb fetch failed for post {p['id']}: {type(e).__name__}")
+        time.sleep(0.6)  # polite rate limit
+
+    print(f"  Thumbnails fetched: {fetched}/{len(posts)}")
+
+# ---------------------------------------------------------------------------
+# request helpers
+# ---------------------------------------------------------------------------
+def current_user(handler):
+    jar = cookies.SimpleCookie()
+    jar.load(handler.headers.get("Cookie", ""))
+    tok = jar.get("session")
+    if not tok or tok.value not in SESSIONS:
+        return None
+    c = db()
+    row = c.execute("SELECT * FROM users WHERE id = ?", (SESSIONS[tok.value],)).fetchone()
+    c.close()
+    return row
+
+def json_body(handler):
+    n = int(handler.headers.get("Content-Length", "0"))
+    return json.loads(handler.rfile.read(n) or b"{}")
+
+def send(handler, status, body, content_type="application/json", extra=None):
+    data = body if isinstance(body, bytes) else body.encode()
+    handler.send_response(status)
+    handler.send_header("Content-Type", content_type + "; charset=utf-8")
+    handler.send_header("Content-Length", str(len(data)))
+    for k, v in (extra or {}).items():
+        handler.send_header(k, v)
+    handler.end_headers()
+    handler.wfile.write(data)
+
+# ---------------------------------------------------------------------------
+# HTML (single-page SPA injected inline)
+# ---------------------------------------------------------------------------
+HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
+<style>
+:root{--bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--ink:#fafafa;--muted:#a1a1aa;--line:rgba(255,255,255,.06);--brand:#818cf8;--brand2:#c084fc;--brand3:#f472b6;--radius:24px;--radius-sm:16px}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(99,102,241,.12),transparent),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(192,132,252,.08),transparent),radial-gradient(ellipse 50% 30% at 50% 50%,rgba(244,114,182,.05),transparent)}
+.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.auth-card{background:var(--surface);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid var(--line);border-radius:var(--radius);padding:48px 32px;max-width:420px;width:100%;text-align:center;animation:fadeUp .6s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.auth-card .icon{font-size:56px;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(99,102,241,.4))}
+.auth-card h1{font-size:28px;margin:0 0 4px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--brand),var(--brand2),var(--brand3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-card .tag{color:var(--muted);font-size:14px;margin-bottom:28px}
+.auth-card .alert{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);border-radius:var(--radius-sm);padding:14px 18px;color:#a5b4fc;font-size:13px;line-height:1.5;margin-bottom:24px;text-align:left}
+.auth-card input{font:inherit;width:100%;padding:15px 18px;background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-sm);outline:none;margin-bottom:16px;color:var(--ink);font-size:15px;transition:all .2s}
+.auth-card input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+.btn{font:inherit;font-weight:700;cursor:pointer;transition:all .2s;border:none;outline:none}.btn:active{transform:scale(.97)}
+.btn-primary{width:100%;padding:16px;border-radius:var(--radius-sm);font-size:16px;letter-spacing:-.2px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;box-shadow:0 4px 24px rgba(99,102,241,.25)}
+.btn-primary:hover{box-shadow:0 6px 32px rgba(99,102,241,.35)}
+.err-text{color:#f87171;font-size:13px;margin-top:8px}
+.app-v{display:none;flex-direction:column;min-height:100vh}.app-v.active{display:flex}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.topbar h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.2px}
+.topbar .hi{font-size:13px;color:var(--muted)}
+.btn-ghost{background:0;color:var(--muted);padding:8px 16px;font-size:13px;border-radius:12px}.btn-ghost:hover{color:var(--ink);background:var(--surface2)}
+/* ── Center-peek Carousel ── */
+.carousel-section{padding:12px 0 8px;flex:0 0 auto;position:relative}
+.carousel-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 24px 12px;text-align:center}
+.carousel-viewport{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:0 calc(50vw - 150px);scrollbar-width:none}
+.carousel-viewport::-webkit-scrollbar{display:none}
+.carousel-track{display:flex;gap:16px;padding:12px 0;align-items:center}
+/* Card */
+.ccard{flex:0 0 280px;scroll-snap-align:center;border-radius:var(--radius);overflow:hidden;background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;height:58vh;display:flex;flex-direction:column;transform:scale(.82);opacity:.4;filter:brightness(.6)}
+.ccard.active{transform:scale(1);opacity:1;filter:brightness(1);border-color:rgba(129,140,248,.4);box-shadow:0 12px 60px rgba(99,102,241,.2);z-index:2}
+.ccard:hover:not(.active){transform:scale(.87);opacity:.6}
+.ccard img{width:100%;height:62%;object-fit:cover;display:block;background:var(--surface2)}
+.ccard .card-body{padding:14px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.ccard .card-title{font-size:13px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ccard .card-meta{font-size:11px;color:var(--muted);margin-top:4px}
+.ccard.active .card-title{font-size:15px}.ccard.active .card-meta{font-size:12px}
+/* Done state */
+.ccard.done{opacity:.35!important;filter:grayscale(.7)!important;transform:scale(.82)!important}
+.ccard.done.active{transform:scale(.88)!important;opacity:.5!important}
+.ccard.done::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;font-weight:900;color:#22c55e;z-index:5;text-shadow:0 0 40px rgba(34,197,94,.5);animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+.ccard.done::before{content:'';position:absolute;inset:0;background:rgba(9,9,11,.5);z-index:4}
+@keyframes popIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+/* ── Stats Bar ── */
 .stats-bar{display:flex;gap:12px;padding:0 24px 16px;flex:0 0 auto;max-width:500px;margin:0 auto;width:100%}
 .stat-item{flex:1;background:rgba(255,255,255,.03);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;padding:18px 14px;text-align:center;transition:all .3s}
 .stat-item:nth-child(1){border-color:rgba(129,140,248,.15)}.stat-item:nth-child(2){border-color:rgba(192,132,252,.15)}.stat-item:nth-child(3){border-color:rgba(244,114,182,.15)}
