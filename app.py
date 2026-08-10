@@ -224,32 +224,37 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .topbar h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.2px}
 .topbar .hi{font-size:13px;color:var(--muted)}
 .btn-ghost{background:0;color:var(--muted);padding:8px 16px;font-size:13px;border-radius:12px}.btn-ghost:hover{color:var(--ink);background:var(--surface2)}
-/* Carousel */
-.carousel-section{padding:16px 0 8px;flex:0 0 auto}
-.carousel-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 24px 12px}
-.carousel-viewport{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:0 24px;scrollbar-width:none}
+/* ── Center-peek Carousel ── */
+.carousel-section{padding:12px 0 8px;flex:0 0 auto;position:relative}
+.carousel-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 24px 12px;text-align:center}
+.carousel-viewport{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:0 calc(50vw - 150px);scrollbar-width:none}
 .carousel-viewport::-webkit-scrollbar{display:none}
-.carousel-track{display:flex;gap:14px;padding:4px 0;align-items:stretch}
-.ccard{flex:0 0 260px;scroll-snap-align:center;border-radius:var(--radius);overflow:hidden;background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;height:56vh;display:flex;flex-direction:column}
-.ccard:hover{transform:translateY(-4px);border-color:rgba(129,140,248,.3);box-shadow:0 8px 40px rgba(99,102,241,.15)}
-.ccard:active{transform:scale(.97)}
+.carousel-track{display:flex;gap:16px;padding:12px 0;align-items:center}
+/* Card */
+.ccard{flex:0 0 280px;scroll-snap-align:center;border-radius:var(--radius);overflow:hidden;background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;height:58vh;display:flex;flex-direction:column;transform:scale(.82);opacity:.4;filter:brightness(.6)}
+.ccard.active{transform:scale(1);opacity:1;filter:brightness(1);border-color:rgba(129,140,248,.4);box-shadow:0 12px 60px rgba(99,102,241,.2);z-index:2}
+.ccard:hover:not(.active){transform:scale(.87);opacity:.6}
 .ccard img{width:100%;height:62%;object-fit:cover;display:block;background:var(--surface2)}
 .ccard .card-body{padding:14px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
 .ccard .card-title{font-size:13px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .ccard .card-meta{font-size:11px;color:var(--muted);margin-top:4px}
-.ccard.done{opacity:.45;filter:grayscale(.6)}
+.ccard.active .card-title{font-size:15px}.ccard.active .card-meta{font-size:12px}
+/* Done state */
+.ccard.done{opacity:.35!important;filter:grayscale(.7)!important;transform:scale(.82)!important}
+.ccard.done.active{transform:scale(.88)!important;opacity:.5!important}
 .ccard.done::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;font-weight:900;color:#22c55e;z-index:5;text-shadow:0 0 40px rgba(34,197,94,.5);animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
 .ccard.done::before{content:'';position:absolute;inset:0;background:rgba(9,9,11,.5);z-index:4}
 @keyframes popIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-.carousel-dots{display:flex;justify-content:center;gap:8px;padding:12px 0 4px}
-.carousel-dots .dot{width:8px;height:8px;border-radius:99px;background:var(--line);transition:all .3s}
-.carousel-dots .dot.active{background:var(--brand);width:24px}
-/* Stats bar */
-.stats-bar{display:flex;gap:10px;padding:0 24px 16px;flex:0 0 auto}
-.stat-item{flex:1;background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;text-align:center}
-.stat-item .val{font-size:26px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--brand),var(--brand2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-item .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-/* Modal - full sheet */
+/* ── Stats Bar ── */
+.stats-bar{display:flex;gap:12px;padding:0 24px 16px;flex:0 0 auto;max-width:500px;margin:0 auto;width:100%}
+.stat-item{flex:1;background:rgba(255,255,255,.03);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;padding:18px 14px;text-align:center;transition:all .3s}
+.stat-item:nth-child(1){border-color:rgba(129,140,248,.15)}.stat-item:nth-child(2){border-color:rgba(192,132,252,.15)}.stat-item:nth-child(3){border-color:rgba(244,114,182,.15)}
+.stat-item .val{font-size:28px;font-weight:800;letter-spacing:-.5px}
+.stat-item:nth-child(1) .val{background:linear-gradient(135deg,#818cf8,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item:nth-child(2) .val{background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item:nth-child(3) .val{background:linear-gradient(135deg,#f472b6,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+/* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex;animation:fadeIn .3s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -259,11 +264,9 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .modal-topbar .mbtn{background:0;color:var(--muted);border:none;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:8px 12px;border-radius:12px;transition:all .2s}
 .modal-topbar .mbtn:hover{color:var(--ink);background:var(--surface2)}
 .modal-topbar .mtitle{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;padding:0 6px}
-/* Top 50%: image */
 .modal-hero{position:relative;overflow:hidden;flex:0 0 44vh;min-height:200px}
 .modal-hero img{width:100%;height:100%;object-fit:cover;display:block}
 .modal-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg2));pointer-events:none}
-/* Bottom 50%: scrollable */
 .modal-body{flex:1;overflow-y:auto;padding:0}
 .modal-body .post-desc{padding:16px 20px 8px;font-size:13px;line-height:1.7;color:var(--muted);border-bottom:1px solid var(--line);white-space:pre-line}
 .modal-body .info-line{font-size:11px;color:var(--muted);word-break:break-all;padding:8px 20px 0}
@@ -281,57 +284,28 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .dominant-cta .btn-ambil:active{transform:scale(.97)}
 .dominant-cta .btn-ambil:disabled{opacity:.5;cursor:not-allowed;background:var(--surface2);box-shadow:none;color:var(--muted)}
 .empty-msg{padding:32px;text-align:center;color:var(--muted);font-size:14px}
-@media(min-width:600px){.ccard{flex:0 0 300px;height:60vh}}
-@media(min-width:860px){.ccard{flex:0 0 320px}}
+@media(min-width:600px){.ccard{flex:0 0 300px;height:62vh}.carousel-viewport{padding:0 calc(50vw - 165px)}}
+@media(min-width:860px){.ccard{flex:0 0 320px}.carousel-viewport{padding:0 calc(50vw - 175px)}}
 </style></head><body>
 
-<div id="auth-v" class="auth-pg">
-  <div class="auth-card">
-    <div class="icon">💬</div>
-    <h1>Comment Desk</h1>
-    <p class="tag">Masuk pakai handle tim internal</p>
-    <div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
-    <input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
-    <button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
-    <p id="auth-err" class="err-text"></p>
-  </div>
-</div>
+<div id="auth-v" class="auth-pg"><div class="auth-card">
+<div class="icon">💬</div><h1>Comment Desk</h1><p class="tag">Masuk pakai handle tim internal</p>
+<div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
+<input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
+<button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
+<p id="auth-err" class="err-text"></p>
+</div></div>
 
-<div id="app-v" class="app-v">
-  <div class="topbar">
-    <h1>💬 Comment Desk</h1>
-    <span class="hi" id="hi"></span>
-    <button class="btn btn-ghost" onclick="doLogout()">Keluar</button>
-  </div>
-  <section class="carousel-section">
-    <p class="carousel-label">Pilih Postingan</p>
-    <div class="carousel-viewport" id="carousel-vp">
-      <div class="carousel-track" id="carousel-track"></div>
-    </div>
-    <div class="carousel-dots" id="carousel-dots"></div>
-  </section>
-  <div class="stats-bar" id="stats-bar"></div>
-  <div class="modal-overlay" id="modal-overlay">
-    <div class="modal-sheet" id="modal-sheet">
-      <div class="modal-topbar">
-        <button class="mbtn" onclick="closeModal()">← Kembali</button>
-        <span class="mtitle" id="modal-title"></span>
-        <button class="mbtn" onclick="closeModal()">✕ Tutup</button>
-      </div>
-      <div class="modal-hero"><img id="modal-img" src="" alt=""></div>
-      <div class="modal-body">
-        <p class="info-line" id="modal-url"></p>
-        <div class="post-desc" id="modal-desc"></div>
-        <div class="cmt-section">
-          <p class="cmt-section-label">💬 Komentar</p>
-          <div id="modal-cmt"></div>
-        </div>
-      </div>
-      <div class="dominant-cta">
-        <button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button>
-      </div>
-    </div>
-  </div>
+<div id="app-v" class="app-v"><div class="topbar"><h1>💬 Comment Desk</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
+<section class="carousel-section"><p class="carousel-label">Pilih Postingan</p>
+<div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
+<div class="stats-bar" id="stats-bar"></div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-topbar">
+<button class="mbtn" onclick="closeModal()">← Kembali</button><span class="mtitle" id="modal-title"></span><button class="mbtn" onclick="closeModal()">✕ Tutup</button>
+</div><div class="modal-hero"><img id="modal-img" src="" alt=""></div><div class="modal-body">
+<p class="info-line" id="modal-url"></p><div class="post-desc" id="modal-desc"></div>
+<div class="cmt-section"><p class="cmt-section-label">💬 Komentar</p><div id="modal-cmt"></div></div>
+</div><div class="dominant-cta"><button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button></div></div></div>
 </div>
 
 <script>
@@ -341,55 +315,38 @@ const S={posts:[],post:null,has:false,done:new Set()};
 async function api(path,opt={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});const d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");return d}
 
 async function boot(){
-  try{
-    const m=await api("/api/me");
-    if(m.user){
-      $("auth-v").style.display="none";$("app-v").classList.add("active");
-      $("hi").textContent="Halo, "+m.user.handle;
-      S.posts=m.posts;
-      for(const p of S.posts){
-        try{const a=await api("/api/assignments?post_id="+p.id);if(a.items.some(x=>x.status==="copied"))S.done.add(p.id)}catch(_){}
-      }
-      renderCarousel();renderStats();
-    }
-  }catch(_){}
-}
+  try{const m=await api("/api/me");
+    if(m.user){$("auth-v").style.display="none";$("app-v").classList.add("active");$("hi").textContent="Halo, "+m.user.handle;S.posts=m.posts;
+    for(const p of S.posts){try{const a=await api("/api/assignments?post_id="+p.id);if(a.items.some(x=>x.status==="copied"))S.done.add(p.id)}catch(_){}}
+    renderCarousel();renderStats()}
+  }catch(_){}}
 
 function renderCarousel(){
-  const track=$("carousel-track"),dots=$("carousel-dots");
-  const cw=window.innerWidth<600?260:window.innerWidth<860?300:320;
-  track.innerHTML=S.posts.map(p=>{
-    const isDone=S.done.has(p.id);
-    return `<div class="ccard${isDone?' done':''}" id="cc-${p.id}" onclick="openModal(${p.id})"><img src="${esc(p.thumbnail)}" alt="${esc(p.title)}" loading="lazy" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=height:62%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:36px>📷</div>')"><div class="card-body"><div class="card-title">${esc(p.title)}</div><div class="card-meta">${p.count} komentar${isDone?' • ✓':''}</div></div></div>`;
-  }).join("");
-  dots.innerHTML=S.posts.map((_,i)=>`<div class="dot${i===0?' active':''}"></div>`).join("");
-  const vp=$("carousel-vp");vp.onscroll=()=>{const idx=Math.round(vp.scrollLeft/(cw+14));dots.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx))};
-  if(S.posts.length>2){const mid=Math.floor(S.posts.length/2);setTimeout(()=>vp.scrollTo({left:mid*(cw+14),behavior:'smooth'}),400)}
+  const track=$("carousel-track"),cw=window.innerWidth<600?300:window.innerWidth<860?320:340;
+  track.innerHTML=S.posts.map(p=>{const isDone=S.done.has(p.id);return '<div class="ccard'+(isDone?' done':'')+'" id="cc-'+p.id+'" onclick="openModal('+p.id+')"><img src="'+esc(p.thumbnail)+'" alt="'+esc(p.title)+'" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div style=height:62%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:36px>📷</div>\')"><div class="card-body"><div class="card-title">'+esc(p.title)+'</div><div class="card-meta">'+p.count+' komentar'+(isDone?' • ✓':'')+'</div></div></div>'}).join("");
+  const vp=$("carousel-vp");vp.onscroll=()=>updateActive();
+  if(S.posts.length>2){const mid=Math.floor(S.posts.length/2);setTimeout(()=>vp.scrollTo({left:mid*(cw+16),behavior:'smooth'}),400)}
+  setTimeout(updateActive,600);
 }
 
-function renderStats(){
-  const total=S.posts.length,done=S.done.size,remain=total-done;
-  $("stats-bar").innerHTML=`<div class="stat-item"><div class="val">${total}</div><div class="lbl">Jumlah Post</div></div><div class="stat-item"><div class="val">${done}</div><div class="lbl">Sudah Dikerjakan</div></div><div class="stat-item"><div class="val">${remain}</div><div class="lbl">Sisa Tugas</div></div>`;
+function updateActive(){
+  const cards=document.querySelectorAll('.ccard'),vp=$("carousel-vp"),vpr=vp.getBoundingClientRect();
+  let best=null,bestDist=Infinity;
+  cards.forEach(c=>{const cr=c.getBoundingClientRect(),ccx=cr.left+cr.width/2,vcx=vpr.left+vpr.width/2,dist=Math.abs(ccx-vcx);c.classList.remove('active');if(dist<bestDist){bestDist=dist;best=c}});
+  if(best)best.classList.add('active');
 }
+
+function renderStats(){const t=S.posts.length,d=S.done.size,r=t-d;$("stats-bar").innerHTML='<div class="stat-item"><div class="val">'+t+'</div><div class="lbl">Total Post</div></div><div class="stat-item"><div class="val">'+d+'</div><div class="lbl">Selesai</div></div><div class="stat-item"><div class="val">'+r+'</div><div class="lbl">Tersisa</div></div>'}
 
 async function openModal(id){
-  S.post=S.posts.find(x=>x.id===id);if(!S.post)return;
-  $("modal-title").textContent=S.post.title;
+  S.post=S.posts.find(x=>x.id===id);if(!S.post)return;$("modal-title").textContent=S.post.title;
   $("modal-img").src=S.post.thumbnail||'';$("modal-img").onerror=function(){this.style.display='none'};
-  $("modal-url").textContent=S.post.source_url||'';
-  $("modal-desc").textContent=S.post.description||'';
-  $("modal-overlay").classList.add("open");document.body.style.overflow='hidden';
-  await reloadModalCmt();
-}
+  $("modal-url").textContent=S.post.source_url||'';$("modal-desc").textContent=S.post.description||'';
+  $("modal-overlay").classList.add("open");document.body.style.overflow='hidden';await reloadModalCmt()}
 
 async function reloadModalCmt(){
-  try{
-    const d=await api("/api/assignments?post_id="+S.post.id);
-    S.has=d.items.length>0;
-    const btn=$("btn-ambil");btn.disabled=S.has;btn.textContent=S.has?"✓ Sudah Ambil 1 Komentar":"🎲 Ambil & Copy Komentar";
-    $("modal-cmt").innerHTML=d.items.length?d.items.map(x=>`<div class="cmt-card"><p class="cmt-body">${esc(x.body)}</p><span class="cmt-tag ${x.status}">${x.status==='copied'?'✓ Sudah di-copy':'📋 Baru di-assign'}</span><button class="btn-copy${x.status==='copied'?' done':''}" onclick="doCopy(${x.id},this)">${x.status==='copied'?'Tersalin ✓':'Copy ke Clipboard'}</button></div>`).join(""):'<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>';
-  }catch(e){$("modal-cmt").innerHTML='<div class="empty-msg">Gagal memuat.</div>'}
-}
+  try{const d=await api("/api/assignments?post_id="+S.post.id);S.has=d.items.length>0;const btn=$("btn-ambil");btn.disabled=S.has;btn.textContent=S.has?"✓ Sudah Ambil 1 Komentar":"🎲 Ambil & Copy Komentar";
+  $("modal-cmt").innerHTML=d.items.length?d.items.map(x=>'<div class="cmt-card"><p class="cmt-body">'+esc(x.body)+'</p><span class="cmt-tag '+x.status+'">'+(x.status==='copied'?'✓ Sudah di-copy':'📋 Baru di-assign')+'</span><button class="btn-copy'+(x.status==='copied'?' done':'')+'" onclick="doCopy('+x.id+',this)">'+(x.status==='copied'?'Tersalin ✓':'Copy ke Clipboard')+'</button></div>').join(""):'<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>'}catch(e){$("modal-cmt").innerHTML='<div class="empty-msg">Gagal memuat.</div>'}}
 
 function closeModal(){$("modal-overlay").classList.remove("open");document.body.style.overflow='';S.done.forEach(pid=>{const c=document.getElementById("cc-"+pid);if(c)c.classList.add("done")});renderStats()}
 async function doAssign(){if(S.has||!S.post)return;try{await api("/api/assign",{method:"POST",body:JSON.stringify({post_id:S.post.id})});await reloadModalCmt()}catch(e){alert(e.message)}}
@@ -401,117 +358,6 @@ window.openModal=openModal;window.doAssign=doAssign;window.doCopy=doCopy;window.
 boot();
 </script></body></html>
 '''
-
-# ---------------------------------------------------------------------------
-# Admin HTML
-# ---------------------------------------------------------------------------
-ADMIN_HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Admin — Comment Desk</title>
-<style>
-:root{--bg:#0f172a;--surface:#1e293b;--ink:#f1f5f9;--muted:#94a3b8;--brand:#818cf8;--brand2:#c084fc;--line:#334155;--radius:16px}
-*,*::before,*::after{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 system-ui,-apple-system,sans-serif;min-height:100vh}
-.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.auth-box{background:var(--surface);border-radius:var(--radius);padding:40px 32px;max-width:420px;width:100%;text-align:center;border:1px solid var(--line);box-shadow:0 4px 24px rgba(0,0,0,.3)}
-.auth-box .icon{font-size:48px;margin-bottom:8px}
-.auth-box h1{font-size:24px;margin:0 0 4px;font-weight:800;letter-spacing:-.3px}
-.auth-box .tag{color:var(--muted);font-size:13px;margin-bottom:24px}
-input,textarea{font:inherit;width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:12px;outline:none;margin-bottom:14px;font-size:14px;background:var(--bg);color:var(--ink);transition:border-color .2s}
-input:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(129,140,248,.15)}
-.btn{font:inherit;font-weight:700;cursor:pointer;transition:all .15s;border:none}
-.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:12px;font-size:15px}
-.btn-primary:hover{opacity:.9}
-.btn-ghost{background:0;color:var(--muted);padding:8px 14px;font-size:13px;border-radius:8px}
-.btn-ghost:hover{color:var(--ink);background:var(--line)}
-.btn-sm{padding:10px 22px;font-size:13px;border-radius:10px;width:auto}
-.err{color:#f87171;font-size:13px;margin-top:8px}.ok{color:#34d399;font-size:13px}
-.dash{display:none;padding:24px;max-width:1200px;margin:0 auto}.dash.active{display:block}
-.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px}
-.dash-header h1{font-size:22px;margin:0;font-weight:800}.dash-header .sub{color:var(--muted);font-size:13px}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px}
-.stat-card{background:var(--surface);border-radius:var(--radius);padding:22px 20px;border:1px solid var(--line)}
-.stat-card .val{font-size:32px;font-weight:800;letter-spacing:-1px}
-.stat-card .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.stat-card .pct{font-size:13px;color:var(--brand);margin-top:4px}
-.section{margin-bottom:28px}.section h3{font-size:15px;font-weight:700;margin:0 0 14px}
-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
-th,td{padding:12px 16px;text-align:left;font-size:13px}
-th{background:var(--line);font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:11px;color:var(--muted)}
-td{border-top:1px solid var(--line)}tr:hover td{background:rgba(129,140,248,.05)}
-.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
-.badge-ok{background:#065f4620;color:#34d399}.badge-new{background:#4338ca20;color:#818cf8}
-.prog-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:60px}
-.prog-fill{height:100%;background:var(--brand);border-radius:3px;transition:width .3s}
-.loading{padding:40px;text-align:center;color:var(--muted)}
-.add-post-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:28px}
-.add-post-box h3{margin:0 0 14px;font-size:15px}
-.add-post-row{display:flex;gap:10px;align-items:flex-end}
-.add-post-row input{flex:1;margin-bottom:0}
-@media(min-width:700px){.stats{grid-template-columns:repeat(4,1fr)}}
-</style></head><body>
-<div id="auth-v" class="auth-pg">
-  <div class="auth-box">
-    <div class="icon">🛡️</div>
-    <h1>Admin Panel</h1>
-    <p class="tag">Comment Desk — Akses terbatas</p>
-    <input id="apwd" type="password" placeholder="Password admin" autocomplete="off" enterkeyhint="go">
-    <button class="btn btn-primary" onclick="doAdminLogin()">Masuk</button>
-    <p id="auth-err" class="err"></p>
-  </div>
-</div>
-<div id="dash-v" class="dash">
-  <div class="dash-header">
-    <div><h1>📊 Comment Desk Dashboard</h1><span class="sub" id="dash-time"></span></div>
-    <button class="btn btn-ghost" onclick="doAdminLogout()">↩ Logout</button>
-  </div>
-  <div class="add-post-box">
-    <h3>➕ Tambah Post Baru (by URL)</h3>
-    <div class="add-post-row">
-      <input id="post-url" placeholder="https://www.instagram.com/p/..." enterkeyhint="go">
-      <button class="btn btn-primary btn-sm" onclick="addPost()">Tambah</button>
-    </div>
-    <p id="add-msg" style="margin-top:8px;font-size:13px"></p>
-  </div>
-  <div class="stats" id="stats"></div>
-  <div class="section"><h3>👥 Aktivitas per User</h3><div id="utable"></div></div>
-  <div class="section"><h3>📋 Progress per Post</h3><div id="ptable"></div></div>
-  <div class="section"><h3>🕐 Aktivitas Terbaru</h3><div id="feed"></div></div>
-</div>
-<script>
-const $=id=>document.getElementById(id);
-function fmtTime(ts){if(!ts)return"-";const d=new Date(ts+"Z");return d.toLocaleString("id-ID",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
-async function api(path,opt={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});const d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");return d}
-async function loadDash(){try{const d=await api("/api/admin/dashboard");renderStats(d);renderUsers(d.users);renderPosts(d.posts);renderFeed(d.feed)}catch(e){$("dash-v").innerHTML='<div class="loading">Gagal: '+e.message+'</div>'}}
-function renderStats(d){
-  const total=d.users.length,assigned=d.users.reduce((s,u)=>s+u.assigned,0),copied=d.users.reduce((s,u)=>s+u.copied,0),postsDone=d.posts.filter(p=>p.users_assigned>=total).length;
-  $("stats").innerHTML='<div class="stat-card"><div class="val">'+total+'</div><div class="lbl">Total Reviewer</div></div><div class="stat-card"><div class="val">'+assigned+'</div><div class="lbl">Komentar Di-assign</div><div class="pct">'+copied+' di-copy</div></div><div class="stat-card"><div class="val">'+copied+'</div><div class="lbl">Komentar Di-copy</div><div class="pct">'+(total?(copied/(assigned||1)*100).toFixed(0):0)+'%</div></div><div class="stat-card"><div class="val">'+postsDone+'/'+d.posts.length+'</div><div class="lbl">Post Tuntas</div><div class="pct">'+(d.posts.length?(postsDone/d.posts.length*100).toFixed(0):0)+'%</div></div>';
-}
-function renderUsers(users){
-  if(!users.length){$("utable").innerHTML='<div class="loading">Belum ada user.</div>';return}
-  $("utable").innerHTML='<table><thead><tr><th>Handle</th><th>Bergabung</th><th>Assigned</th><th>Di-copy</th><th>Progress</th></tr></thead><tbody>'+users.map(u=>'<tr><td><strong>'+esc(u.handle)+'</strong></td><td>'+fmtTime(u.created_at)+'</td><td>'+u.assigned+'</td><td>'+u.copied+'</td><td><div class="prog-bar"><div class="prog-fill" style="width:'+(u.assigned?(u.copied/u.assigned*100):0)+'%"></div></div> '+(u.assigned?(u.copied/u.assigned*100).toFixed(0):0)+'%</td></tr>').join("")+'</tbody></table>';
-}
-function renderPosts(posts){
-  if(!posts.length){$("ptable").innerHTML='<div class="loading">Belum ada post.</div>';return}
-  $("ptable").innerHTML='<table><thead><tr><th>Post</th><th>Komentar</th><th>User Assigned</th><th>User Copy</th><th>Progress</th></tr></thead><tbody>'+posts.map(p=>'<tr><td><strong>'+esc(p.title)+'</strong></td><td>'+p.comment_count+'</td><td>'+p.users_assigned+'</td><td>'+p.users_copied+'</td><td><div class="prog-bar"><div class="prog-fill" style="width:'+(p.users_assigned?(p.users_copied/p.users_assigned*100):0)+'%"></div></div> '+(p.users_assigned?(p.users_copied/p.users_assigned*100).toFixed(0):0)+'%</td></tr>').join("")+'</tbody></table>';
-}
-function renderFeed(feed){
-  if(!feed.length){$("feed").innerHTML='<div class="loading">Belum ada aktivitas.</div>';return}
-  $("feed").innerHTML='<table><thead><tr><th>Waktu</th><th>User</th><th>Post</th><th>Aksi</th></tr></thead><tbody>'+feed.map(f=>'<tr><td>'+fmtTime(f.ts)+'</td><td>'+esc(f.handle)+'</td><td>'+esc(f.post_title)+'</td><td><span class="badge badge-'+(f.action==='copied'?'ok':'new')+'">'+(f.action==='copied'?'✓ Copy':'📋 Assign')+'</span></td></tr>').join("")+'</tbody></table>';
-}
-async function addPost(){
-  const url=$("post-url").value.trim(),msg=$("add-msg");
-  if(!url)return msg.innerHTML='<span class="err">Masukkan URL Instagram</span>';
-  msg.innerHTML='<span class="ok">Menambahkan post...</span>';
-  try{const d=await api("/api/admin/add-post",{method:"POST",body:JSON.stringify({url})});msg.innerHTML='<span class="ok">✅ Post ditambahkan: "'+esc(d.post.title)+'" — '+d.comments_generated+' komentar dibuat</span>';$("post-url").value='';loadDash()}catch(e){msg.innerHTML='<span class="err">❌ '+e.message+'</span>'}
-}
-async function doAdminLogin(){
-  const pwd=$("apwd").value.trim();if(!pwd)return $("auth-err").textContent="Masukkan password";
-  try{await api("/api/admin/login",{method:"POST",body:JSON.stringify({password:pwd})});$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent="Data real-time • "+new Date().toLocaleString("id-ID");loadDash()}catch(e){$("auth-err").textContent=e.message}
-}
-async function boot(){try{await api("/api/admin/me");$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent="Data real-time • "+new Date().toLocaleString("id-ID");loadDash()}catch(_){}}
-async function doAdminLogout(){try{await api("/api/admin/logout",{method:"POST"});location.reload()}catch(_){location.reload()}}
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
-boot();
-</script></body></html>'''
 
 # ---------------------------------------------------------------------------
 # Comment generator (template-based, generates varied Indonesian comments)
