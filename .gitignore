@@ -3,3 +3,4 @@ commentdesk/
 __pycache__/
 *.db
 .DS_Store
+node_modules/
