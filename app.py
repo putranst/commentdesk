@@ -496,6 +496,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == "/": return send(self, 200, HTML, "text/html")
+        if path == "/health": return send(self, 200, "OK", "text/plain")
         if path == "/admin": return send(self, 200, ADMIN_HTML, "text/html")
         if path == "/logo.png":
             logo = (ROOT / "bumen-logo.png").read_bytes()
