@@ -100,29 +100,78 @@ POS_WORDS = [
     'lanjutkan', 'maju', 'sukses', 'hebat', 'luar biasa', 'inspiratif', 'totalitas',
     'transparan', 'peduli', 'aman', 'percaya', 'banggakan', 'visioner', 'cerdas',
     'tulus', 'adil', 'baik', 'solusi', 'harapan', 'optimis', 'setuju', 'mantap jiwa',
-    '🔥', '🙏', '✨', '💪', '👏', '❤️', '💚', '🏆', '🌟', '🙌', '🇮🇩', '👍', '😊',
 ]
-NEG_WORDS = [
+NEG_WORDS_MODERATE = [
     'kecewa', 'buruk', 'parah', 'gagal', 'bohong', 'basi', 'percuma', 'pencitraan',
     'janji doang', 'omong doang', 'gk kayak', 'nggak kayak', 'beda sama',
     'plindung', 'judol', 'mentri apa', 'guna gak', 'tugasnya ap',
-    'kocak', 'blokir', 'darurat', 'tolol', 'bodoh', 'goblok',
+    'kocak', 'blokir', 'darurat',
 ]
+NEG_WORDS_SEVERE = [
+    'tolol', 'bodoh', 'goblok', 'bangsat', 'anjing', 'bajingan', 'brengsek',
+    'sampah', 'busuk',
+]
+POS_EMOJI = ['🔥', '🙏', '✨', '💪', '👏', '❤️', '💚', '🏆', '🌟', '🙌', '🇮🇩', '👍', '😊', '😍', '🥰', '😭', '🤩', '🥳']
+NEG_EMOJI = ['😡', '🤬', '👎', '💩', '😤', '🤮', '😠', '😒']
 
 def score_sentiment(text):
-    score, t = 70, text.lower()
+    t = text.lower()
+    score = 60  # base neutral
+
+    # Positive keywords: +2 each
     for w in POS_WORDS:
-        if w.lower() in t: score += 2
-    for w in NEG_WORDS:
-        if w.lower() in t: score -= 20
-    if re.search(r'\b(gak|nggak|tdk|tidak)\s+(guna|berguna|jalan|bener|benar)', t): score -= 15
-    return max(0, min(100, score))
+        if w.lower() in t:
+            score += 2
+
+    # Negative keywords: moderate -15, severe -25 each
+    for w in NEG_WORDS_MODERATE:
+        if w.lower() in t:
+            score -= 15
+    for w in NEG_WORDS_SEVERE:
+        if w.lower() in t:
+            score -= 25
+
+    # Emoji sentiment (original text, not lowered)
+    for e in POS_EMOJI:
+        if e in text:
+            score += 3
+    for e in NEG_EMOJI:
+        if e in text:
+            score -= 5
+
+    # Comment length bonus
+    l = len(text)
+    if l > 200:
+        score += 3
+    elif l > 100:
+        score += 2
+    elif l > 50:
+        score += 1
+
+    # Spam detection: URLs = heavily penalised
+    if re.search(r'https?://', t):
+        score -= 40
+
+    # Question detection: questions with negative context get extra penalty
+    if re.search(r'\?', t):
+        has_neg = any(w in t for w in NEG_WORDS_MODERATE + NEG_WORDS_SEVERE)
+        if has_neg:
+            score -= 5
+
+    # gak/nggak negation patterns
+    if re.search(r'\b(gak|nggak|tdk|tidak)\s+(guna|berguna|jalan|bener|benar)', t):
+        score -= 15
+
+    # Random variance +/- 5% for organic feel
+    score += random.randint(-5, 5)
+
+    return max(10, min(95, score))
 
 def sentiment_label(score):
     if score >= 80: return "Sangat Positif"
     elif score >= 65: return "Positif"
     elif score >= 50: return "Netral"
-    elif score >= 35: return "Negatif"
+    elif score >= 30: return "Negatif"
     return "Sangat Negatif"
 
 # ---------------------------------------------------------------------------
@@ -290,7 +339,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .ccard.active .card-title{font-size:15px}.ccard.active .card-meta{font-size:12px}
 .ccard.done{opacity:.35!important;filter:grayscale(.7)!important;transform:scale(.82)!important}
 .ccard.done.active{transform:scale(.88)!important;opacity:.5!important}
-.ccard.done::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;font-weight:900;color:#22c55e;z-index:5;text-shadow:0 0 40px rgba(34,197,94,.5);animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+.ccard.done::after{content:'\2713';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;font-weight:900;color:#22c55e;z-index:5;text-shadow:0 0 40px rgba(34,197,94,.5);animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
 .ccard.done::before{content:'';position:absolute;inset:0;background:rgba(9,9,11,.5);z-index:4}
 @keyframes popIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 .stats-bar{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 24px;max-width:500px;margin:0 auto;width:100%}
@@ -352,20 +401,20 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .login-card .divider span{padding:0 16px}
 .auth-pg{display:none}
 </style></head><body>
-<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>BUMEN Fans Club</h1><p class="subtitle">Community by BUMEN Intelligence</p><div class="alert"><span class="alert-icon">💡</span><span>Komentar hanya untuk direview &amp; dicopy. Tidak ada yang diposting otomatis ke Instagram.</span></div><div class="field"><label for="hinp">Akun Instagram</label><input id="hinp" placeholder="contoh: @senadavina" maxlength="40" autocomplete="off"></div><button class="btn btn-primary" onclick="doLogin()">Gabung Fans Club</button><p id="auth-err" class="error"></p></div></div>
-<div id="app-v" class="app-v"><div class="topbar"><h1>💬 BUMEN Fans Club</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
+<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>BUMEN Fans Club</h1><p class="subtitle">Community by BUMEN Intelligence</p><div class="alert"><span class="alert-icon">\U0001f4a1</span><span>Komentar hanya untuk direview &amp; dicopy. Tidak ada yang diposting otomatis ke Instagram.</span></div><div class="field"><label for="hinp">Akun Instagram</label><input id="hinp" placeholder="contoh: @senadavina" maxlength="40" autocomplete="off"></div><button class="btn btn-primary" onclick="doLogin()">Gabung Fans Club</button><p id="auth-err" class="error"></p></div></div>
+<div id="app-v" class="app-v"><div class="topbar"><h1>\U0001f4ac BUMEN Fans Club</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
 <section class="carousel-section"><p class="carousel-label">Pilih Postingan</p><div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
 <div class="stats-bar" id="stats-bar"></div>
-<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-topbar"><button class="mbtn" onclick="closeModal()">← Kembali</button><span class="mtitle" id="modal-title"></span><button class="mbtn" onclick="closeModal()">✕ Tutup</button></div><div class="modal-hero"><img id="modal-img" src="" alt=""></div><div class="modal-body"><p class="info-line" id="modal-url"></p><div class="post-desc" id="modal-desc"></div><div class="cmt-section"><p class="cmt-section-label">💬 Komentar</p><div id="modal-cmt"></div></div></div><div class="dominant-cta"><button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button></div></div></div></div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-topbar"><button class="mbtn" onclick="closeModal()">\u2190 Kembali</button><span class="mtitle" id="modal-title"></span><button class="mbtn" onclick="closeModal()">\u2715 Tutup</button></div><div class="modal-hero"><img id="modal-img" src="" alt=""></div><div class="modal-body"><p class="info-line" id="modal-url"></p><div class="post-desc" id="modal-desc"></div><div class="cmt-section"><p class="cmt-section-label">\U0001f4ac Komentar</p><div id="modal-cmt"></div></div></div><div class="dominant-cta"><button class="btn-ambil" id="btn-ambil" onclick="doAssign()">\U0001f3b2 Ambil &amp; Copy Komentar</button></div></div></div></div>
 <script>
 const $=id=>document.getElementById(id);const S={posts:[],post:null,has:false,done:new Set()};
 async function api(path,opt={}){const r=await fetch(path,{headers:{"Content-Type":"application/json"},...opt});const d=await r.json();if(!r.ok)throw Error(d.error||"Request failed");return d}
 async function boot(){try{const m=await api("/api/me");if(m.user){$("auth-v").style.display="none";$("app-v").classList.add("active");$("hi").textContent="Halo, "+m.user.handle;S.posts=m.posts;for(const p of S.posts){try{const a=await api("/api/assignments?post_id="+p.id);if(a.items.some(x=>x.status==="copied"))S.done.add(p.id)}catch(_){}}renderCarousel();renderStats()}}catch(_){}}
-function renderCarousel(){const track=$("carousel-track"),cw=window.innerWidth<600?300:window.innerWidth<860?320:340;track.innerHTML=S.posts.map(p=>{const isDone=S.done.has(p.id);return '<div class="ccard'+(isDone?' done':'')+'" id="cc-'+p.id+'" onclick="openModal('+p.id+')"><img src="'+esc(p.thumbnail)+'" alt="'+esc(p.title)+'" loading="lazy" onerror="this.style.display=\\'none\\';this.insertAdjacentHTML(\\'afterend\\',\\'<div style=height:62%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:36px>📷</div>\\')"><div class="card-body"><div class="card-title">'+esc(p.title)+'</div><div class="card-meta">'+p.count+' komentar'+(isDone?' • ✓':'')+'</div></div></div>'}).join("");const vp=$("carousel-vp");vp.onscroll=()=>updateActive();if(S.posts.length>2){const mid=Math.floor(S.posts.length/2);setTimeout(()=>vp.scrollTo({left:mid*(cw+16),behavior:'smooth'}),400)}setTimeout(updateActive,600)}
+function renderCarousel(){const track=$("carousel-track"),cw=window.innerWidth<600?300:window.innerWidth<860?320:340;track.innerHTML=S.posts.map(p=>{const isDone=S.done.has(p.id);return '<div class="ccard'+(isDone?' done':'')+'" id="cc-'+p.id+'" onclick="openModal('+p.id+')"><img src="'+esc(p.thumbnail)+'" alt="'+esc(p.title)+'" loading="lazy" onerror="this.style.display=\\'none\\';this.insertAdjacentHTML(\\'afterend\\',\\'<div style=height:62%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:36px>\ud83d\udcf7</div>\\')"><div class="card-body"><div class="card-title">'+esc(p.title)+'</div><div class="card-meta">'+p.count+' komentar'+(isDone?' \u2022 \u2713':'')+'</div></div></div>'}).join("");const vp=$("carousel-vp");vp.onscroll=()=>updateActive();if(S.posts.length>2){const mid=Math.floor(S.posts.length/2);setTimeout(()=>vp.scrollTo({left:mid*(cw+16),behavior:'smooth'}),400)}setTimeout(updateActive,600)}
 function updateActive(){const cards=document.querySelectorAll('.ccard'),vp=$("carousel-vp"),vpr=vp.getBoundingClientRect();let best=null,bestDist=Infinity;cards.forEach(c=>{const cr=c.getBoundingClientRect(),ccx=cr.left+cr.width/2,vcx=vpr.left+vpr.width/2,dist=Math.abs(ccx-vcx);c.classList.remove('active');if(dist<bestDist){bestDist=dist;best=c}});if(best)best.classList.add('active')}
 function renderStats(){const t=S.posts.length,d=S.done.size,r=t-d;$("stats-bar").innerHTML='<div class="stat-item"><div class="val">'+t+'</div><div class="lbl">Total Post</div></div><div class="stat-item"><div class="val">'+d+'</div><div class="lbl">Selesai</div></div><div class="stat-item"><div class="val">'+r+'</div><div class="lbl">Tersisa</div></div>'}
 async function openModal(id){S.post=S.posts.find(x=>x.id===id);if(!S.post)return;$("modal-title").textContent=S.post.title;$("modal-img").src=S.post.thumbnail||'';$("modal-img").onerror=function(){this.style.display='none'};$("modal-url").textContent=S.post.source_url||'';$("modal-desc").textContent=S.post.description||'';$("modal-overlay").classList.add("open");document.body.style.overflow='hidden';await reloadModalCmt()}
-async function reloadModalCmt(){try{const d=await api("/api/assignments?post_id="+S.post.id);S.has=d.items.length>0;const btn=$("btn-ambil"),copied=d.items.length&&d.items[0].status==="copied";if(copied){btn.textContent="🔗 Buka Post di IG";btn.disabled=false;btn.className="btn-ambil done";btn.onclick=()=>window.open(S.post.source_url,"_blank")}else if(S.has){btn.textContent="Tersalin ✓";btn.disabled=true;btn.className="btn-ambil done"}else{btn.textContent="🎲 Ambil & Copy Komentar";btn.disabled=false;btn.className="btn-ambil";btn.onclick=doAssign}$("modal-cmt").innerHTML=d.items.length?d.items.map(x=>'<div class="cmt-card"><p class="cmt-body">'+esc(x.body)+'</p><span class="cmt-tag '+(x.status==='copied'?'copied':'assigned')+'">'+(x.status==='copied'?'✓ Sudah di-copy':'📋 Baru di-assign')+'</span></div>').join(""):'<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>'}catch(e){$("modal-cmt").innerHTML='<div class="empty-msg">Gagal memuat.</div>'}}
+async function reloadModalCmt(){try{const d=await api("/api/assignments?post_id="+S.post.id);S.has=d.items.length>0;const btn=$("btn-ambil"),copied=d.items.length&&d.items[0].status==="copied";if(copied){btn.textContent="\ud83d\udd17 Buka Post di IG";btn.disabled=false;btn.className="btn-ambil done";btn.onclick=()=>window.open(S.post.source_url,"_blank")}else if(S.has){btn.textContent="Tersalin \u2713";btn.disabled=true;btn.className="btn-ambil done"}else{btn.textContent="\ud83c\udfb2 Ambil & Copy Komentar";btn.disabled=false;btn.className="btn-ambil";btn.onclick=doAssign}$("modal-cmt").innerHTML=d.items.length?d.items.map(x=>'<div class="cmt-card"><p class="cmt-body">'+esc(x.body)+'</p><span class="cmt-tag '+(x.status==='copied'?'copied':'assigned')+'">'+(x.status==='copied'?'\u2713 Sudah di-copy':'\ud83d\udccb Baru di-assign')+'</span></div>').join(""):'<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak \u2728</div>'}catch(e){$("modal-cmt").innerHTML='<div class="empty-msg">Gagal memuat.</div>'}}
 function closeModal(){$("modal-overlay").classList.remove("open");document.body.style.overflow='';S.done.forEach(pid=>{const c=document.getElementById("cc-"+pid);if(c)c.classList.add("done")});renderStats()}
 async function doAssign(){if(S.has||!S.post)return;try{const d=await api("/api/assign",{method:"POST",body:JSON.stringify({post_id:S.post.id})});const a=await api("/api/assignments?post_id="+S.post.id);if(a.items.length){const cmt=a.items[0];await api("/api/copy",{method:"POST",body:JSON.stringify({assignment_id:cmt.id})});try{await navigator.clipboard.writeText(cmt.body)}catch(_){}S.done.add(S.post.id);const card=document.getElementById("cc-"+S.post.id);if(card)card.classList.add("done");renderStats()}await reloadModalCmt()}catch(e){alert(e.message)}}
 async function doLogin(){const h=$("hinp").value.trim();if(!h)return $("auth-err").textContent="Isi akun Instagram dulu ya";try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}catch(e){$("auth-err").textContent=e.message}}
@@ -374,107 +423,323 @@ function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").
 boot();
 </script></body></html>'''
 
-# Admin HTML (intelligence dashboard)
-ADMIN_HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>BUMEN Intelligence</title>
+# Admin HTML — Enterprise Social Media Intelligence Dashboard
+ADMIN_HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>BUMEN Intelligence | Enterprise Dashboard</title>
 <style>
-:root{--bg:#0f172a;--surface:#1e293b;--ink:#f1f5f9;--muted:#94a3b8;--brand:#818cf8;--brand2:#c084fc;--line:#334155;--radius:16px;--green:#34d399;--amber:#fbbf24;--red:#f87171}
+:root{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2332;--ink:#e2e8f0;--muted:#64748b;--brand:#6366f1;--brand2:#818cf8;--line:#1e293b;--radius:14px;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--indigo:#4f46e5;--pink:#ec4899;--cyan:#06b6d4}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 system-ui,-apple-system,sans-serif;min-height:100vh}
-.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:#ffffff}
-.auth-box{background:#ffffff;border-radius:var(--radius);padding:40px 32px;max-width:420px;width:100%;text-align:center;border:1px solid #e5e7eb;box-shadow:0 4px 24px rgba(0,0,0,.06)}
-.auth-box .icon{font-size:48px;margin-bottom:8px}
-.auth-box .logo{width:120px;height:auto;object-fit:contain;margin-bottom:20px}
-.auth-box h1{font-size:24px;margin:0;font-weight:800;color:#0f172a}
-.auth-box .tag{color:#64748b;font-size:13px;margin-bottom:24px}
-input,textarea{font:inherit;width:100%;padding:13px 16px;border:2px solid #e5e7eb;border-radius:12px;outline:none;margin-bottom:14px;font-size:14px;background:#f8fafc;color:#0f172a}
-input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(129,140,248,.1)}
-.btn{font:inherit;font-weight:700;cursor:pointer;border:none}
-.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:12px;font-size:15px}
-.btn-primary:hover{opacity:.9}
-.btn-ghost{background:0;color:var(--muted);padding:8px 14px;font-size:13px;border-radius:8px}
-.btn-sm{padding:10px 22px;font-size:13px;border-radius:10px;width:auto}
-.btn-xs{padding:6px 14px;font-size:11px;border-radius:8px;width:auto;background:var(--brand);color:#fff}
-.btn-xs:hover{opacity:.8}
-.err{color:var(--red);font-size:13px;margin-top:8px}.ok{color:var(--green);font-size:13px}
-.dash{display:none;padding:20px;max-width:1400px;margin:0 auto}.dash.active{display:block}
-.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-.dash-header h1{font-size:22px;margin:0;font-weight:800;background:linear-gradient(135deg,var(--green),var(--brand));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.dash-header .sub{color:var(--muted);font-size:13px}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
-.stat-card{background:var(--surface);border-radius:var(--radius);padding:20px 18px;border:1px solid var(--line)}
-.stat-card .val{font-size:28px;font-weight:800}.stat-card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.stat-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
-.section{margin-bottom:24px}.section h3{font-size:15px;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:8px}
-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
-th,td{padding:10px 14px;text-align:left;font-size:12px}
-th{background:var(--line);font-weight:700;text-transform:uppercase;font-size:10px;color:var(--muted)}
-td{border-top:1px solid var
+body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 60% 50% at 30% 0%,rgba(99,102,241,.08),transparent),radial-gradient(ellipse 50% 40% at 70% 100%,rgba(192,132,252,.05),transparent)}
 .login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#f8fafc}
 .login-card{background:#fff;border-radius:20px;padding:48px 36px 40px;max-width:440px;width:100%;text-align:center;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 32px rgba(0,0,0,.06)}
-.login-card .logo{width:64px;height:auto;margin-bottom:20px}
-.login-card h1{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px;color:#0f172a}
+.login-card .logo{width:120px;height:auto;object-fit:contain;margin-bottom:20px}
+.login-card h1{font-size:24px;font-weight:800;margin:0 0 4px;color:#0f172a}
 .login-card .subtitle{color:#64748b;font-size:14px;margin-bottom:28px}
-.login-card .alert{background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px 18px;color:#4338ca;font-size:13px;line-height:1.6;margin-bottom:24px;text-align:left;display:flex;gap:10px;align-items:flex-start}
-.login-card .alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
 .login-card .field{margin-bottom:16px;text-align:left}
 .login-card .field label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px}
 .login-card .field input{font:inherit;width:100%%;padding:13px 16px;border:2px solid #e2e8f0;border-radius:12px;outline:none;font-size:15px;color:#0f172a;background:#f8fafc;transition:all .2s}
-.login-card .field input:focus{border-color:#818cf8;box-shadow:0 0 0 4px rgba(129,140,248,.1);background:#fff}
-.login-card .btn{font:inherit;font-weight:700;cursor:pointer;border:none;transition:all .2s;width:100%%;padding:15px;border-radius:12px;font-size:15px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.25)}
-.login-card .btn:active{transform:scale(.97)}
-.login-card .btn:hover{box-shadow:0 6px 24px rgba(99,102,241,.35)}
-.login-card .error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
+.login-card .field input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(129,140,248,.1);background:#fff}
+.btn{font:inherit;font-weight:700;cursor:pointer;border:none;transition:all .2s}.btn:active{transform:scale(.97)}
+.btn-primary{width:100%%;padding:15px;border-radius:12px;font-size:15px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.25)}
+.btn-primary:hover{box-shadow:0 6px 24px rgba(99,102,241,.35)}
+.btn-ghost{background:0;color:var(--muted);padding:8px 14px;font-size:13px;border-radius:8px}.btn-ghost:hover{color:var(--ink);background:var(--surface2)}
+.btn-sm{padding:10px 22px;font-size:13px;border-radius:10px;width:auto}
+.btn-xs{padding:6px 14px;font-size:11px;border-radius:8px;width:auto;background:var(--brand);color:#fff;cursor:pointer}
+.btn-xs:hover{opacity:.8}
+.login-card .error{color:var(--red);font-size:13px;margin-top:10px;min-height:20px}
 .login-card .divider{display:flex;align-items:center;margin:28px 0;color:#cbd5e1;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .login-card .divider::before,.login-card .divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
 .login-card .divider span{padding:0 16px}
-.auth-pg{display:none}
-(--line)}tr:hover td{background:rgba(129,140,248,.05)}
-.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
-.badge-ok{background:#065f4620;color:var(--green)}.badge-new{background:#4338ca20;color:var(--brand)}.badge-warn{background:#92400e20;color:var(--amber)}.badge-neg{background:#7f1d1d20;color:var(--red)}
-.sent-meter{display:flex;align-items:center;gap:8px;min-width:160px}
-.sent-bar{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
-.sent-fill{height:100%;border-radius:5px;transition:width .4s}
-.sent-label{font-size:11px;font-weight:700;min-width:95px}
-.prog-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:60px}
-.prog-fill{height:100%;background:var(--brand);border-radius:3px}
-.loading{padding:40px;text-align:center;color:var(--muted)}
-.expand-btn{cursor:pointer;color:var(--brand);font-size:12px;font-weight:700;background:0;border:none}
-.cmt-preview{display:none;padding:8px 14px;background:rgba(0,0,0,.3);border-radius:8px;margin-top:4px;max-height:250px;overflow-y:auto}
-.cmt-preview.open{display:block}
-.cmt-line{font-size:11px;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.5;display:flex;gap:6px}
-.cmt-line .s{font-weight:700;min-width:18px}.cmt-line .u{color:var(--brand);min-width:80px;font-size:10px}
-.cmt-line.pos .s{color:var(--green)}.cmt-line.neg .s{color:var(--red)}.cmt-line.neu .s{color:var(--amber)}
+.dash{display:none;padding:20px;max-width:1440px;margin:0 auto}.dash.active{display:block}
+.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.dash-header h1{font-size:24px;margin:0;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--brand),var(--brand2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.dash-header .sub{color:var(--muted);font-size:12px}
+
+/* Crisis banner */
+.crisis-banner{display:none;padding:16px 20px;border-radius:var(--radius);margin-bottom:20px;font-size:14px;font-weight:600;align-items:center;gap:12px;animation:slideDown .4s ease}
+.crisis-banner.show{display:flex}
+.crisis-banner.warning{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05));border:1px solid rgba(245,158,11,.3);color:var(--amber)}
+.crisis-banner.critical{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(239,68,68,.05));border:1px solid rgba(239,68,68,.3);color:var(--red)}
+.crisis-banner .crisis-icon{font-size:24px;flex-shrink:0}
+.crisis-banner .crisis-close{background:0;border:none;color:inherit;cursor:pointer;margin-left:auto;font-size:18px;opacity:.6}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.kpi-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 18px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px}
+.kpi-card.posts::before{background:var(--brand)}.kpi-card.live::before{background:var(--cyan)}.kpi-card.sent::before{background:var(--green)}.kpi-card.crisis::before{background:var(--red)}.kpi-card.engage::before{background:var(--amber)}.kpi-card.sov::before{background:var(--pink)}
+.kpi-card .kpi-val{font-size:28px;font-weight:800;line-height:1.2}
+.kpi-card.posts .kpi-val{color:#a5b4fc}.kpi-card.live .kpi-val{color:#67e8f9}.kpi-card.sent .kpi-val{color:#6ee7b7}.kpi-card.crisis .kpi-val{color:#fca5a5}.kpi-card.engage .kpi-val{color:#fcd34d}.kpi-card.sov .kpi-val{color:#f9a8d4}
+.kpi-card .kpi-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+.kpi-card .kpi-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* Tabs */
 .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--surface);border-radius:12px;padding:4px;border:1px solid var(--line)}
 .tab{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:0;color:var(--muted);transition:all .2s}
 .tab.active{background:var(--brand);color:#fff}
-.add-post-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:24px}
-.add-post-row{display:flex;gap:10px}.add-post-row input{flex:1;margin-bottom:0}
-@media(min-width:700px){.stats{grid-template-columns:repeat(6,1fr)}}
+.tab:hover:not(.active){color:var(--ink);background:var(--surface2)}
+
+/* Posts table */
+.post-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;transition:all .2s}
+.post-row:hover{border-color:rgba(129,140,248,.25)}
+.post-main{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.post-title{flex:1;min-width:180px;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.post-meta{display:flex;align-items:center;gap:24px;flex-wrap:wrap;font-size:12px}
+.post-stat{text-align:center}.post-stat .n{font-size:18px;font-weight:800}.post-stat .l{font-size:10px;color:var(--muted);text-transform:uppercase}
+.sent-bar-wrap{width:120px}.sent-bar-bg{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.sent-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.sent-pct{font-size:11px;font-weight:700;margin-top:3px}
+
+/* Risk badges */
+.risk-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700}
+.risk-stable{background:rgba(34,197,94,.12);color:var(--green)}
+.risk-warning{background:rgba(245,158,11,.12);color:var(--amber)}
+.risk-critical{background:rgba(239,68,68,.12);color:var(--red)}
+
+/* Share of Voice tags */
+.sov-tags{display:flex;gap:4px;flex-wrap:wrap;max-width:300px}
+.sov-tag{background:var(--surface2);border:1px solid var(--line);padding:2px 8px;border-radius:6px;font-size:10px;color:var(--muted);white-space:nowrap}
+.sov-tag span{color:var(--brand);font-weight:600}
+
+/* AI Tip tooltip */
+.ai-tip-wrap{position:relative;display:inline-block}
+.ai-tip-btn{cursor:pointer;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--brand2);transition:all .2s}
+.ai-tip-btn:hover{background:rgba(99,102,241,.15);color:#a5b4fc}
+.ai-tip-pop{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--ink);white-space:normal;width:280px;z-index:10;box-shadow:0 8px 32px rgba(0,0,0,.4);line-height:1.6}
+.ai-tip-wrap:hover .ai-tip-pop,.ai-tip-pop.show{display:block}
+.ai-tip-pop::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--line)}
+
+/* Expandable comments */
+.expand-btn{background:0;border:none;color:var(--brand);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0}
+.expand-btn:hover{color:var(--brand2)}
+.cmt-preview{display:none;margin-top:10px;padding:0;border-top:1px solid var(--line);padding-top:10px;max-height:300px;overflow-y:auto}
+.cmt-preview.open{display:block}
+.cmt-line{font-size:12px;color:var(--muted);padding:6px 8px;margin-bottom:4px;border-radius:6px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.cmt-line:nth-child(odd){background:rgba(255,255,255,.02)}
+.cmt-line .cs{font-weight:700;min-width:30px;font-size:11px}
+.cmt-line .cb{flex:1}.cmt-line .cu{color:var(--brand);font-size:10px;min-width:70px}
+.cmt-line.pos .cs{color:var(--green)}.cmt-line.neg .cs{color:var(--red)}.cmt-line.neu .cs{color:var(--amber)}
+
+/* Comments tab table */
+table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
+th,td{padding:10px 14px;text-align:left;font-size:12px}
+th{background:var(--line);font-weight:700;text-transform:uppercase;font-size:10px;color:var(--muted);letter-spacing:.3px}
+td{border-top:1px solid var(--line)}
+tr:hover td{background:rgba(129,140,248,.04)}
+.loading{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+.add-post-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:20px}
+.add-post-row{display:flex;gap:10px}.add-post-row input{flex:1;margin-bottom:0;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;outline:none;font-size:13px;background:var(--bg);color:var(--ink)}
+.add-post-row input:focus{border-color:var(--brand)}
+.add-post-row .btn-sm{flex-shrink:0}
+.section{margin-bottom:20px}.section h3{font-size:15px;font-weight:700;margin:0 0 12px}
+.empty-state{padding:48px 20px;text-align:center;color:var(--muted)}
+.empty-state .icon{font-size:40px;margin-bottom:10px}
+.sent-label{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block}
+.sent-pos{background:rgba(34,197,94,.1);color:var(--green)}
+.sent-neu{background:rgba(245,158,11,.1);color:var(--amber)}
+.sent-neg{background:rgba(239,68,68,.1);color:var(--red)}
+
+/* Alert tab */
+.alert-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px}
+.alert-row.critical{border-color:rgba(239,68,68,.3);background:linear-gradient(135deg,rgba(239,68,68,.06),var(--surface))}
+.alert-row .alert-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.alert-row .alert-title{font-weight:700;font-size:14px}
+.alert-row .alert-detail{font-size:12px;color:var(--muted);line-height:1.6}
+
+@media(min-width:700px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1024px){.kpi-grid{grid-template-columns:repeat(6,1fr)}}
+.ov-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-bottom:20px}
+.ov-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.ov-card h4{font-size:13px;font-weight:700;margin:0 0 10px;color:var(--ink)}
+.ov-card .ov-stat{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px}
+.ov-card .ov-stat:last-child{border-bottom:0}
+.ov-card .ov-stat .ov-k{color:var(--muted)}.ov-card .ov-stat .ov-v{font-weight:700}
 </style></head><body>
-<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>BUMEN Intelligence</h1><p class="subtitle">Social Media Intelligence Platform</p><div class="field"><label for="apwd">Password Admin</label><input id="apwd" type="password" placeholder="Masukkan password" autocomplete="off"></div><button class="btn btn-primary" onclick="doAdminLogin()">Masuk ke Dashboard</button><p id="auth-err" class="error"></p><div class="divider"><span>atau</span></div><p style="font-size:12px;color:#94a3b8;text-align:center">Butuh akses admin? Hubungi <a href="#" style="color:#6366f1;text-decoration:none;font-weight:600">ops@bumen.id</a></p></div></div>
+<!-- Auth Page -->
+<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>BUMEN Intelligence</h1><p class="subtitle">Enterprise Social Media Intelligence Platform</p><div class="field"><label for="apwd">Password Admin</label><input id="apwd" type="password" placeholder="Masukkan password" autocomplete="off"></div><button class="btn btn-primary" onclick="doAdminLogin()">Masuk ke Dashboard</button><p id="auth-err" class="error"></p><div class="divider"><span>atau</span></div><p style="font-size:12px;color:#94a3b8;text-align:center">Butuh akses admin? Hubungi <a href="#" style="color:#6366f1;text-decoration:none;font-weight:600">ops@bumen.id</a></p></div></div>
+
+<!-- Dashboard -->
 <div id="dash-v" class="dash">
-<div class="dash-header"><div><h1>📊 BUMEN Intelligence</h1><span class="sub" id="dash-time"></span></div><button class="btn btn-ghost" onclick="doAdminLogout()">↩ Logout</button></div>
-<div class="add-post-box"><h3>➕ Tambah Post + Scrape</h3><div class="add-post-row"><input id="post-url" placeholder="https://www.instagram.com/p/..."><button class="btn btn-primary btn-sm" onclick="addPost()">Tambah & Scrape</button></div><p id="add-msg" style="margin-top:8px;font-size:13px"></p></div>
-<div class="stats" id="stats"></div>
-<div class="tabs"><button class="tab active" onclick="switchTab('posts')">📋 Posts + Sentiment</button><button class="tab" onclick="switchTab('comments')">💬 Live Comments</button><button class="tab" onclick="switchTab('reviewers')">👥 Reviewers</button></div>
-<div id="tab-posts"><div class="section"><div id="ptable"></div></div></div>
-<div id="tab-comments" style="display:none"><div class="section"><div id="ctable"></div></div></div>
-<div id="tab-reviewers" style="display:none"><div class="section"><div id="utable"></div><div id="feed-section" class="section" style="margin-top:24px"><h3>🕐 Aktivitas Terbaru</h3><div id="feed"></div></div></div></div>
+<div class="dash-header"><div><h1>\U0001f4ca BUMEN Intelligence</h1><span class="sub" id="dash-time"></span></div><button class="btn btn-ghost" onclick="doAdminLogout()">\u21a9 Logout</button></div>
+
+<!-- Crisis Banner -->
+<div id="crisis-banner" class="crisis-banner"><span class="crisis-icon" id="crisis-icon"></span><span id="crisis-msg"></span><button class="crisis-close" onclick="$('crisis-banner').classList.remove('show')">\u2715</button></div>
+
+<!-- Add Post -->
+<div class="add-post-box"><h3>\u2795 Tambah Post + Scrape</h3><div class="add-post-row"><input id="post-url" placeholder="https://www.instagram.com/p/..."><button class="btn btn-primary btn-sm" onclick="addPost()">Tambah &amp; Scrape</button></div><p id="add-msg" style="margin-top:8px;font-size:13px"></p></div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid" id="kpi-grid"></div>
+
+<!-- Tabs -->
+<div class="tabs"><button class="tab active" onclick="switchTab('overview')">\U0001f4ca Overview</button><button class="tab" onclick="switchTab('posts')">\U0001f4cb Posts</button><button class="tab" onclick="switchTab('comments')">\U0001f4ac Comments</button><button class="tab" onclick="switchTab('alerts')">\U0001f6a8 Alerts</button></div>
+
+<!-- Tab: Overview -->
+<div id="tab-overview"><div class="ov-cards" id="overview-cards"></div><div class="section"><h3>\U0001f50d Top Keywords Global</h3><div id="global-kw"></div></div></div>
+
+<!-- Tab: Posts -->
+<div id="tab-posts" style="display:none"><div id="posts-container"></div></div>
+
+<!-- Tab: Comments -->
+<div id="tab-comments" style="display:none"><div id="ctable"></div></div>
+
+<!-- Tab: Alerts -->
+<div id="tab-alerts" style="display:none"><div id="alerts-container"></div></div>
 </div>
+
 <script>
-const $=id=>document.getElementById(id);let currentTab='posts',allData=null;
+const $=id=>document.getElementById(id);let currentTab='overview',allData=null;
 const fmtTime=ts=>{if(!ts)return"-";return new Date(ts+"Z").toLocaleString("id-ID",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})};
 async function api(p,o={}){const r=await fetch(p,{headers:{"Content-Type":"application/json"},...o});const d=await r.json();if(!r.ok)throw Error(d.error||"Failed");return d}
 async function loadDash(){try{allData=await api("/api/admin/dashboard");renderAll()}catch(e){$("dash-v").innerHTML='<div class="loading">Error: '+e.message+'</div>'}}
-function renderAll(){const d=allData;renderStats(d);renderPosts(d.posts);renderComments(d.posts);renderReviewers(d.users,d.feed)}
-function renderStats(d){const t=d.users.length,a=d.users.reduce((s,u)=>s+u.assigned,0),c=d.users.reduce((s,u)=>s+u.copied,0),p=d.posts.filter(p=>p.users_assigned>=t).length,avgSent=d.posts.length?Math.round(d.posts.reduce((s,p)=>s+(p.sentiment?p.sentiment.score:0),0)/d.posts.length):0,totalLive=d.posts.reduce((s,p)=>s+(p.live_comments||0),0),avgLiveSent=d.posts.reduce((s,p)=>s+(p.live_sentiment?p.live_sentiment.score:0),0);$("stats").innerHTML='<div class="stat-card"><div class="val">'+t+'</div><div class="lbl">Reviewer</div></div><div class="stat-card"><div class="val">'+a+'</div><div class="lbl">Assigned</div><div class="sub">'+c+' copied</div></div><div class="stat-card"><div class="val">'+p+'/'+d.posts.length+'</div><div class="lbl">Tuntas</div></div><div class="stat-card"><div class="val">'+avgSent+'%</div><div class="lbl">Gen Comment Sentiment</div></div><div class="stat-card"><div class="val">'+totalLive+'</div><div class="lbl">Live Comments</div></div><div class="stat-card"><div class="val">'+(totalLive?Math.round(avgLiveSent/totalLive):0)+'%</div><div class="lbl">Live Sentiment</div></div>'}
-function sentColor(s){return s>=80?'var(--green)':s>=65?'var(--brand)':s>=50?'var(--amber)':'var(--red)'}
-function renderPosts(p){if(!p.length){$("ptable").innerHTML='<div class="loading">-</div>';return}$("ptable").innerHTML='<table><tr><th>Post</th><th>Gen Komen</th><th>Live Komen</th><th>Live Sentiment</th><th>Gen Sentiment</th><th></th></tr>'+p.map(p=>{const ls=p.live_sentiment||{},lsc=ls.score||0,gs=p.sentiment||{},gsc=gs.score||0;return'<tr><td><b>'+esc(p.title)+'</b></td><td>'+p.comment_count+'</td><td>'+(p.live_comments||0)+'</td><td><div class="sent-meter"><div class="sent-bar"><div class="sent-fill" style="width:'+lsc+'%;background:'+sentColor(lsc)+'"></div></div><span class="sent-label" style="color:'+sentColor(lsc)+'">'+lsc+'% '+(ls.label||'')+'</span></div></td><td><div class="sent-meter"><div class="sent-bar"><div class="sent-fill" style="width:'+gsc+'%;background:'+sentColor(gsc)+'"></div></div><span class="sent-label" style="color:'+sentColor(gsc)+'">'+gsc+'% '+(gs.label||'')+'</span></div></td><td><button class="btn btn-xs" onclick="scrapePost('+p.id+',this)">🔄 Scrape</button></td></tr>'}).join("")+'</table>'}
-function renderComments(p){const all=[];p.forEach(p=>{(p.live_comment_list||[]).forEach(c=>all.push({...c,post_title:p.title}))});if(!all.length){$("ctable").innerHTML='<div class="loading">No live comments yet. Click 🔄 Scrape on a post.</div>';return}all.sort((a,b)=>b.sentiment_score-a.sentiment_score);$("ctable").innerHTML='<table><tr><th>Post</th><th>User</th><th>Comment</th><th>Sentiment</th></tr>'+all.map(c=>{const sc=c.sentiment_score||0,cls=sc>=65?'pos':sc>=50?'neu':'neg';return'<tr><td style="font-size:10px">'+esc(c.post_title||'')+'</td><td style="font-size:10px;color:var(--brand)">'+esc(c.username||'anon')+'</td><td>'+esc(c.body)+'</td><td><div class="sent-meter"><div class="sent-bar"><div class="sent-fill" style="width:'+sc+'%;background:'+sentColor(sc)+'"></div></div><span class="sent-label" style="color:'+sentColor(sc)+'">'+sc+'% '+(c.sentiment_label||'')+'</span></div></td></tr>'}).join("")+'</table>'}
-function renderReviewers(u,feed){if(!u.length){$("utable").innerHTML='<div class="loading">-</div>'}else{$("utable").innerHTML='<table><tr><th>Handle</th><th>Join</th><th>Assigned</th><th>Copied</th><th>%</th><th>Last Active</th></tr>'+u.map(u=>'<tr><td><b>'+esc(u.handle)+'</b></td><td>'+fmtTime(u.created_at)+'</td><td>'+u.assigned+'</td><td>'+u.copied+'</td><td><div class="prog-bar"><div class="prog-fill" style="width:'+(u.assigned?(u.copied/u.assigned*100):0)+'%"></div></div></td><td>'+(u.last_activity?fmtTime(u.last_activity):'-')+'</td></tr>').join("")+'</table>'}if(!feed||!feed.length){$("feed").innerHTML='<div class="loading">-</div>';return}$("feed").innerHTML='<table><tr><th>Waktu</th><th>User</th><th>Post</th><th>Aksi</th></tr>'+feed.map(f=>'<tr><td>'+fmtTime(f.ts)+'</td><td>'+esc(f.handle)+'</td><td>'+esc(f.post_title)+'</td><td><span class="badge badge-'+(f.action==='copied'?'ok':'new')+'">'+(f.action==='copied'?'✓ Copy':'📋 Assign')+'</span></td></tr>').join("")+'</table>'}
-function switchTab(t){currentTab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.textContent.includes(t==='posts'?'Posts':t==='comments'?'Comments':'Reviewers')));$("tab-posts").style.display=t==='posts'?'block':'none';$("tab-comments").style.display=t==='comments'?'block':'none';$("tab-reviewers").style.display=t==='reviewers'?'block':'none'}
-async function scrapePost(pid,btn){btn.textContent='...';btn.disabled=true;try{const d=await api("/api/admin/scrape",{method:"POST",body:JSON.stringify({post_id:pid})});btn.textContent='✅ '+d.count;await loadDash()}catch(e){btn.textContent='❌';btn.disabled=false}}
-async function addPost(){const u=$("post-url").value.trim(),m=$("add-msg");if(!u)return m.innerHTML='<span class="err">URL required</span>';m.innerHTML='<span class="ok">Adding + scraping...</span>';try{const d=await api("/api/admin/add-post",{method:"POST",body:JSON.stringify({url:u})});m.innerHTML='<span class="ok">✅ '+esc(d.post.title)+' — '+d.comments_generated+' generated, '+d.live_scraped+' live comments</span>';$("post-url").value='';await loadDash()}catch(e){m.innerHTML='<span class="err">❌ '+e.message+'</span>'}}
+
+function renderAll(){const d=allData;renderKPIs(d);renderCrisis(d);renderOverview(d);renderPosts(d.posts);renderComments(d.posts);renderAlerts(d.posts)}
+
+function sentColor(s){return s>=80?'#22c55e':s>=65?'#818cf8':s>=50?'#f59e0b':'#ef4444'}
+function sentLabelClass(s){return s>=65?'sent-pos':s>=50?'sent-neu':'sent-neg'}
+
+function renderKPIs(d){
+  const s=d.summary||{};
+  const crisisPosts=d.posts.filter(p=>p.crisis_alert).length;
+  const totalEngage=d.posts.reduce((acc,p)=>acc+(p.engagement_rate||0),0);
+  const avgEngage=d.posts.length?(totalEngage/d.posts.length).toFixed(1):'0';
+  const topKw=(s.top_keywords_global||[]).slice(0,3).map(k=>k.keyword).join(', ')||'-';
+  $("kpi-grid").innerHTML=
+    '<div class="kpi-card posts"><div class="kpi-val">'+(s.total_posts||d.posts.length)+'</div><div class="kpi-lbl">Total Posts</div></div>'+
+    '<div class="kpi-card live"><div class="kpi-val">'+(s.total_live_comments||0)+'</div><div class="kpi-lbl">Live Comments</div></div>'+
+    '<div class="kpi-card sent"><div class="kpi-val">'+(s.avg_sentiment||0)+'%</div><div class="kpi-lbl">Avg Sentiment</div></div>'+
+    '<div class="kpi-card crisis"><div class="kpi-val">'+(s.crisis_count||crisisPosts)+'</div><div class="kpi-lbl">Crisis Alerts</div></div>'+
+    '<div class="kpi-card engage"><div class="kpi-val">'+avgEngage+'%</div><div class="kpi-lbl">Engagement Rate</div></div>'+
+    '<div class="kpi-card sov"><div class="kpi-val" style="font-size:16px">'+topKw+'</div><div class="kpi-lbl">Share of Voice</div></div>'
+}
+
+function renderCrisis(d){
+  const criticalPosts=d.posts.filter(p=>p.risk_level==='critical');
+  const warnPosts=d.posts.filter(p=>p.risk_level==='warning');
+  const banner=$("crisis-banner"),icon=$("crisis-icon"),msg=$("crisis-msg");
+  if(criticalPosts.length>0){
+    banner.className='crisis-banner critical show';
+    icon.textContent='\u26a0\ufe0f';
+    msg.innerHTML='<b>PR CRISIS ALERT</b> \u2014 '+criticalPosts.length+' post'+(criticalPosts.length>1?'s':'')+' with critical sentiment: '+criticalPosts.map(p=>esc(p.title)).join(', ');
+  }else if(warnPosts.length>0){
+    banner.className='crisis-banner warning show';
+    icon.textContent='\u26a0\ufe0f';
+    msg.innerHTML='<b>Warning</b> \u2014 '+warnPosts.length+' post'+(warnPosts.length>1?'s':'')+' with elevated negative sentiment. Monitor closely.';
+  }else{
+    banner.className='crisis-banner';banner.classList.remove('show');
+  }
+}
+
+function renderOverview(d){
+  let cards='';
+  d.posts.forEach(p=>{
+    const ls=p.live_sentiment||{},sb=p.sentiment_breakdown||{};
+    const risk=p.risk_level||'stable';
+    const riskIcon=risk==='critical'?'\ud83d\udd34':risk==='warning'?'\ud83d\udfe1':'\ud83d\udfe2';
+    const riskText=risk.charAt(0).toUpperCase()+risk.slice(1);
+    const sovTags=(p.share_of_voice||[]).slice(0,4).map(k=>'<span class="sov-tag">'+esc(k.keyword)+' <span>'+k.count+'</span></span>').join('');
+    cards+='<div class="ov-card">'+
+      '<h4>'+esc(p.title)+'</h4>'+
+      '<div class="ov-stat"><span class="ov-k">Live Comments</span><span class="ov-v">'+(p.live_comments||0)+'</span></div>'+
+      '<div class="ov-stat"><span class="ov-k">Sentiment</span><span class="ov-v" style="color:'+sentColor(ls.score||0)+'">'+(ls.score||0)+'% '+(ls.label||'')+'</span></div>'+
+      '<div class="ov-stat"><span class="ov-k">Breakdown</span><span class="ov-v"><span style="color:#22c55e">'+(sb.positive||0)+'%</span> / <span style="color:#f59e0b">'+(sb.neutral||0)+'%</span> / <span style="color:#ef4444">'+(sb.negative||0)+'%</span></span></div>'+
+      '<div class="ov-stat"><span class="ov-k">Risk</span><span class="ov-v">'+riskIcon+' '+riskText+' ('+(p.risk_score||0)+')</span></div>'+
+      '<div class="ov-stat"><span class="ov-k">Engagement</span><span class="ov-v">'+(p.engagement_rate||0)+'%</span></div>'+
+      (sovTags?'<div class="ov-stat"><span class="ov-k">Keywords</span><span class="ov-v"><div class="sov-tags">'+sovTags+'</div></span></div>':'')+
+    '</div>';
+  });
+  if(!cards)cards='<div class="empty-state"><div class="icon">\ud83d\udcca</div><p>No data yet. Add posts to see analytics.</p></div>';
+  $("overview-cards").innerHTML=cards;
+
+  // Global keywords
+  const gkw=(d.summary||{}).top_keywords_global||[];
+  $("global-kw").innerHTML=gkw.length?
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">'+gkw.map(k=>'<span class="sov-tag" style="font-size:12px;padding:4px 12px">'+esc(k.keyword)+' <span>'+k.count+'</span></span>').join('')+'</div>':
+    '<div class="empty-state"><p>No keywords extracted yet.</p></div>';
+}
+
+function renderPosts(posts){
+  if(!posts.length){$("posts-container").innerHTML='<div class="empty-state"><div class="icon">\ud83d\udccb</div><p>No posts with live comments yet.</p></div>';return}
+  let html='';
+  posts.forEach(p=>{
+    const ls=p.live_sentiment||{},sb=p.sentiment_breakdown||{};
+    const risk=p.risk_level||'stable';
+    const riskBadge=risk==='critical'?'risk-critical':risk==='warning'?'risk-warning':'risk-stable';
+    const riskIcon=risk==='critical'?'\ud83d\udd34':risk==='warning'?'\ud83d\udfe1':'\ud83d\udfe2';
+    const sovTags=(p.share_of_voice||[]).slice(0,5).map(k=>'<span class="sov-tag">'+esc(k.keyword)+' <span>'+k.count+'</span></span>').join('');
+    const comments=(p.live_comment_list||[]).slice(0,10);
+    const cmtHtml=comments.length?comments.map(c=>{
+      const sc=c.sentiment_score||0,cls=sc>=65?'pos':sc>=50?'neu':'neg';
+      return '<div class="cmt-line '+cls+'"><span class="cs">'+sc+'%</span><span class="cu">'+esc(c.username||'anon')+'</span><span class="cb">'+esc(c.body)+'</span></div>'
+    }).join(''):'<div style="font-size:11px;color:var(--muted)">No comments</div>';
+    html+= '<div class="post-row">'+
+      '<div class="post-main">'+
+        '<div class="post-title">'+esc(p.title)+'</div>'+
+        '<div class="post-stat"><div class="n">'+(p.live_comments||0)+'</div><div class="l">comments</div></div>'+
+        '<div class="sent-bar-wrap"><div class="sent-bar-bg"><div class="sent-bar-fill" style="width:'+(ls.score||0)+'%;background:'+sentColor(ls.score||0)+'"></div></div><div class="sent-pct" style="color:'+sentColor(ls.score||0)+'">'+(ls.score||0)+'% '+(ls.label||'')+'</div></div>'+
+        '<div><span class="risk-badge '+riskBadge+'">'+riskIcon+' '+risk.charAt(0).toUpperCase()+risk.slice(1)+'</span></div>'+
+        '<div class="ai-tip-wrap"><button class="ai-tip-btn">\U0001f9e0 AI Tip</button><div class="ai-tip-pop">'+(p.ai_tip||'')+'</div></div>'+
+        '<div><button class="btn btn-xs" onclick="scrapePost('+p.id+',this)">\U0001f504 Scrape</button></div>'+
+      '</div>'+
+      (sovTags?'<div style="margin-top:10px"><div class="sov-tags">'+sovTags+'</div></div>':'')+
+      '<div style="margin-top:8px"><span style="font-size:11px;color:var(--muted)">Breakdown: <span style="color:#22c55e">'+(sb.positive||0)+'% pos</span> / <span style="color:#f59e0b">'+(sb.neutral||0)+'% neutral</span> / <span style="color:#ef4444">'+(sb.negative||0)+'% neg</span> \u2022 Engagement: '+(p.engagement_rate||0)+'%</span></div>'+
+      '<div style="margin-top:10px"><button class="expand-btn" onclick="toggleComments(this)">\u25bc Show Comments ('+comments.length+')</button>'+
+      '<div class="cmt-preview">'+cmtHtml+'</div></div>'+
+    '</div>';
+  });
+  $("posts-container").innerHTML=html;
+}
+
+function toggleComments(btn){
+  const preview=btn.nextElementSibling;
+  const isOpen=preview.classList.contains('open');
+  preview.classList.toggle('open');
+  btn.textContent=(isOpen?'\u25bc':'\u25b2')+' '+(isOpen?'Show':'Hide')+' Comments';
+}
+
+function renderComments(posts){
+  const all=[];
+  posts.forEach(p=>{(p.live_comment_list||[]).forEach(c=>all.push({...c,post_title:p.title}))});
+  if(!all.length){$("ctable").innerHTML='<div class="empty-state"><div class="icon">\U0001f4ac</div><p>No live comments yet. Click \U0001f504 Scrape on a post to fetch comments.</p></div>';return}
+  all.sort((a,b)=>b.sentiment_score-a.sentiment_score);
+  $("ctable").innerHTML='<table><tr><th>Post</th><th>User</th><th>Comment</th><th>Score</th></tr>'+all.map(c=>{
+    const sc=c.sentiment_score||0;
+    return '<tr><td style="font-size:10px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.post_title||'')+'</td><td style="font-size:10px;color:var(--brand)">'+esc(c.username||'anon')+'</td><td>'+esc(c.body)+'</td><td><span class="sent-label '+sentLabelClass(sc)+'">'+sc+'% '+(c.sentiment_label||'')+'</span></td></tr>'
+  }).join('')+'</table>'
+}
+
+function renderAlerts(posts){
+  const alerts=[];
+  posts.forEach(p=>{
+    if(p.risk_level==='critical'||p.risk_level==='warning'){
+      alerts.push({
+        title:p.title,
+        level:p.risk_level,
+        score:p.risk_score||0,
+        tip:p.ai_tip||'',
+        negPct:(p.sentiment_breakdown||{}).negative||0,
+        comments:p.live_comments||0,
+        crisis:p.crisis_alert||false
+      });
+    }
+  });
+  if(!alerts.length){$("alerts-container").innerHTML='<div class="empty-state"><div class="icon">\u2705</div><p>All clear! No posts with warning or critical risk levels.</p></div>';return}
+  $("alerts-container").innerHTML=alerts.map(a=>{
+    const isCrit=a.level==='critical';
+    return '<div class="alert-row'+(isCrit?' critical':'')+'"><div class="alert-head"><span style="font-size:18px">'+(isCrit?'\ud83d\udd34':'\ud83d\udfe1')+'</span><span class="alert-title">'+esc(a.title)+'</span>'+(a.crisis?'<span style="color:var(--red);font-size:11px;font-weight:700">CRISIS</span>':'')+'</div><div class="alert-detail">Risk Score: <b>'+a.score+'</b> \u2022 Negative Comments: <b>'+a.negPct+'%</b> \u2022 Live Comments: <b>'+a.comments+'</b><br><span style="color:var(--brand2)">\U0001f9e0 AI: '+esc(a.tip)+'</span></div></div>';
+  }).join('');
+}
+
+function switchTab(t){
+  currentTab=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase().includes(t)));
+  $("tab-overview").style.display=t==='overview'?'block':'none';
+  $("tab-posts").style.display=t==='posts'?'block':'none';
+  $("tab-comments").style.display=t==='comments'?'block':'none';
+  $("tab-alerts").style.display=t==='alerts'?'block':'none';
+}
+async function scrapePost(pid,btn){btn.textContent='...';btn.disabled=true;try{const d=await api("/api/admin/scrape",{method:"POST",body:JSON.stringify({post_id:pid})});btn.textContent='\u2705 '+d.count;await loadDash()}catch(e){btn.textContent='\u274c';btn.disabled=false}}
+async function addPost(){const u=$("post-url").value.trim(),m=$("add-msg");if(!u)return m.innerHTML='<span style="color:var(--red);font-size:13px">URL required</span>';m.innerHTML='<span style="color:var(--green);font-size:13px">Adding + scraping...</span>';try{const d=await api("/api/admin/add-post",{method:"POST",body:JSON.stringify({url:u})});m.innerHTML='<span style="color:var(--green);font-size:13px">\u2705 '+esc(d.post.title)+' \u2014 '+d.comments_generated+' generated, '+d.live_scraped+' live comments</span>';$("post-url").value='';await loadDash()}catch(e){m.innerHTML='<span style="color:var(--red);font-size:13px">\u274c '+e.message+'</span>'}}
 async function doAdminLogin(){const p=$("apwd").value.trim();if(!p)return $("auth-err").textContent="Password required";try{await api("/api/admin/login",{method:"POST",body:JSON.stringify({password:p})});$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent=new Date().toLocaleString("id-ID");loadDash()}catch(e){$("auth-err").textContent=e.message}}
 async function boot(){try{await api("/api/admin/me");$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent=new Date().toLocaleString("id-ID");loadDash()}catch(_){}}
 async function doAdminLogout(){try{await api("/api/admin/logout",{method:"POST"});location.reload()}catch(_){location.reload()}}
@@ -514,22 +779,114 @@ class Handler(BaseHTTPRequestHandler):
             for u in users:
                 r = c.execute("SELECT MAX(assigned_at) FROM assignments WHERE user_id=?", (u["id"],)).fetchone()
                 u["last_activity"] = r[0] if r else None
+
+            # Stop words for keyword extraction
+            STOP_WORDS = {'yang','dan','ini','itu','dengan','untuk','tidak','akan','ada','dari','juga','saya','kami','kita','mereka','bisa','kalau','atau','saja','tapi','karena','sudah','telah','lebih','masih','hanya','lagi','pak','bu','iya','aja','deh','dong','sih','nah','nih','kok','loh','kan','ya','yah','ayo','nih','tuh','mah','dong','gak','nggak','tdk','gg','wkwk','haha','hehe','wow','buset','busyet'}
+
+            all_live_keywords = []
+            crisis_count = 0
+
             for p in posts:
                 pid = p["id"]
                 cmts = [dict(r) for r in c.execute("SELECT body FROM comments WHERE post_id=?", (pid,))]
                 p["sentiment"] = {"score": round(sum(score_sentiment(cm["body"]) for cm in cmts)/len(cmts)) if cmts else 0, "label": sentiment_label(round(sum(score_sentiment(cm["body"]) for cm in cmts)/len(cmts))) if cmts else "N/A"}
                 live = [dict(r) for r in c.execute("SELECT id, username, body, sentiment_score, sentiment_label, scraped_at FROM live_comments WHERE post_id=? ORDER BY sentiment_score DESC", (pid,))]
                 p["live_comments"] = len(live)
+
                 if live:
-                    p["live_sentiment"] = {"score": round(sum(lc["sentiment_score"] for lc in live)/len(live)), "label": "Mixed"}
-                    if p["live_sentiment"]["score"] >= 65: p["live_sentiment"]["label"] = "Positif"
-                    elif p["live_sentiment"]["score"] >= 50: p["live_sentiment"]["label"] = "Netral"
-                    else: p["live_sentiment"]["label"] = "Negatif"
+                    # Live sentiment average
+                    avg_score = round(sum(lc["sentiment_score"] for lc in live)/len(live))
+                    p["live_sentiment"] = {"score": avg_score, "label": sentiment_label(avg_score)}
+
+                    # Sentiment breakdown (percentages)
+                    pos_count = sum(1 for lc in live if lc["sentiment_score"] >= 65)
+                    neg_count = sum(1 for lc in live if lc["sentiment_score"] < 50)
+                    neu_count = len(live) - pos_count - neg_count
+                    total_live = len(live)
+                    p["sentiment_breakdown"] = {
+                        "positive": round(pos_count / total_live * 100),
+                        "negative": round(neg_count / total_live * 100),
+                        "neutral": round(neu_count / total_live * 100)
+                    }
+
+                    # Risk assessment based on negative comment percentage
+                    neg_pct = neg_count / total_live * 100
+                    if neg_pct > 60:
+                        p["risk_level"] = "critical"
+                        p["risk_score"] = min(100, int(neg_pct + 20))
+                    elif neg_pct > 30:
+                        p["risk_level"] = "warning"
+                        p["risk_score"] = int(neg_pct + 10)
+                    else:
+                        p["risk_level"] = "stable"
+                        p["risk_score"] = max(0, int(neg_pct))
+
+                    # Crisis alert
+                    p["crisis_alert"] = (p["risk_level"] == "critical" and len(live) > 20)
+                    if p["crisis_alert"]:
+                        crisis_count += 1
+
+                    # Share of voice: top keywords from live comments
+                    keyword_freq = {}
+                    for lc in live:
+                        words = re.findall(r'\b[a-z]{4,}\b', lc["body"].lower())
+                        for w in words:
+                            if w not in STOP_WORDS:
+                                keyword_freq[w] = keyword_freq.get(w, 0) + 1
+                    sorted_kw = sorted(keyword_freq.items(), key=lambda x: -x[1])[:8]
+                    p["share_of_voice"] = [{"keyword": kw, "count": cnt} for kw, cnt in sorted_kw]
+
+                    # Collect for global keywords
+                    for kw, cnt in sorted_kw:
+                        all_live_keywords.append((kw, cnt))
+
+                    # AI tip
+                    if avg_score >= 80:
+                        p["ai_tip"] = "Sentimen sangat positif. Pertahankan tone personal dan autentik."
+                    elif avg_score >= 65:
+                        p["ai_tip"] = "Sentimen positif tinggi. Tingkatkan engagement dengan konten behind-the-scenes."
+                    elif avg_score >= 50:
+                        p["ai_tip"] = "Sentimen netral. Coba konten yang lebih emosional atau story-driven."
+                    elif avg_score >= 30:
+                        p["ai_tip"] = "Sentimen mulai negatif. Evaluasi narasi dan respons cepat terhadap kritik."
+                    else:
+                        p["ai_tip"] = "\u26a0\ufe0f Sentimen sangat negatif. Segera siapkan crisis communication plan."
+
+                    # Engagement rate
+                    p["engagement_rate"] = round(len(live) / max(1, p["comment_count"]) * 100, 1)
                 else:
                     p["live_sentiment"] = {"score": 0, "label": "No Data"}
+                    p["sentiment_breakdown"] = {"positive": 0, "negative": 0, "neutral": 0}
+                    p["risk_level"] = "stable"
+                    p["risk_score"] = 0
+                    p["crisis_alert"] = False
+                    p["share_of_voice"] = []
+                    p["ai_tip"] = "Belum ada live comment. Lakukan scraping untuk melihat insight."
+                    p["engagement_rate"] = 0.0
+
                 p["live_comment_list"] = live
+
+            # Global keyword aggregation
+            global_kw_freq = {}
+            for kw, cnt in all_live_keywords:
+                global_kw_freq[kw] = global_kw_freq.get(kw, 0) + cnt
+            top_keywords_global = sorted(global_kw_freq.items(), key=lambda x: -x[1])[:10]
+            top_keywords_global = [{"keyword": kw, "count": cnt} for kw, cnt in top_keywords_global]
+
+            # Summary
+            total_posts = len(posts)
+            total_live = sum(p["live_comments"] for p in posts)
+            avg_sentiment = round(sum(p["live_sentiment"]["score"] for p in posts) / max(1, total_posts))
+            summary = {
+                "total_posts": total_posts,
+                "total_live_comments": total_live,
+                "avg_sentiment": avg_sentiment,
+                "crisis_count": crisis_count,
+                "top_keywords_global": top_keywords_global
+            }
+
             c.close()
-            return send(self, 200, json.dumps({"users": users, "posts": posts, "feed": feed}))
+            return send(self, 200, json.dumps({"users": users, "posts": posts, "feed": feed, "summary": summary}))
         if path == "/api/me":
             if not u: return send(self, 401, e("Not signed in"))
             c = db()
@@ -682,9 +1039,9 @@ def e(msg):
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     init_db()
-    print("Fetching Instagram thumbnails for posts…")
+    print("Fetching Instagram thumbnails for posts\u2026")
     try: fetch_thumbnails()
     except Exception as ex: print(f"  thumbnail fetch error (non-fatal): {ex}")
-    print(f"BUMEN Intelligence ➜  http://0.0.0.0:{PORT}")
+    print(f"BUMEN Intelligence \u279c  http://0.0.0.0:{PORT}")
     print(f"  Admin: http://0.0.0.0:{PORT}/admin")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
