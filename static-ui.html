@@ -1,4 +1,4 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>BUMEN Fans Club</title>
 <style>
 :root{--bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--ink:#fafafa;--muted:#a1a1aa;--line:rgba(255,255,255,.06);--brand:#818cf8;--brand2:#c084fc;--brand3:#f472b6;--radius:24px;--radius-sm:16px}
 *,*::before,*::after{box-sizing:border-box}
@@ -87,14 +87,14 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 </style></head><body>
 
 <div id="auth-v" class="auth-pg"><div class="auth-card">
-<div class="icon">💬</div><h1>Comment Desk</h1><p class="tag">Masuk pakai handle tim internal</p>
+<div class="icon">💬</div><h1>BUMEN Fans Club</h1><p class="tag">Masuk pakai handle tim internal</p>
 <div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
-<input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
-<button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
+<input id="hinp" maxlength="40" placeholder="contoh: @senadavina" autocomplete="off" enterkeyhint="go">
+<button class="btn btn-primary" onclick="doLogin()">Gabung Fans Club</button>
 <p id="auth-err" class="err-text"></p>
 </div></div>
 
-<div id="app-v" class="app-v"><div class="topbar"><h1>💬 Comment Desk</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
+<div id="app-v" class="app-v"><div class="topbar"><h1>💬 BUMEN Fans Club</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
 <section class="carousel-section"><p class="carousel-label">Pilih Postingan</p>
 <div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
 <div class="stats-bar" id="stats-bar"></div>
@@ -123,7 +123,7 @@ function openModal(id){S.post=POSTS.find(function(x){return x.id===id});if(!S.po
 function reloadModalCmt(){var key=S.user+'_'+S.post.id,assign=ALL[key];S.has=!!(assign!==void 0);var btn=$('btn-ambil'),copied=S.has&&ALL[key+'_copied'];if(copied){btn.textContent='🔗 Buka Post di IG';btn.disabled=false;btn.className='btn-ambil done';btn.onclick=function(){window.open(S.post.source_url,'_blank')}}else if(S.has){btn.textContent='Tersalin ✓';btn.disabled=true;btn.className='btn-ambil done'}else{btn.textContent='🎲 Ambil & Copy Komentar';btn.disabled=false;btn.className='btn-ambil';btn.onclick=doAssign}if(assign!==void 0){var c=S.post.comments[assign];$('modal-cmt').innerHTML='<div class="cmt-card"><p class="cmt-body">'+esc(c)+'</p><span class="cmt-tag '+(copied?'copied':'assigned')+'">'+(copied?'✓ Sudah di-copy':'📋 Baru di-assign')+'</span></div>'}else{$('modal-cmt').innerHTML='<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>'}}
 function closeModal(){$('modal-overlay').classList.remove('open');document.body.style.overflow='';S.done.forEach(function(pid){var c=document.getElementById('cc-'+pid);if(c)c.classList.add('done')});renderStats()}
 function doAssign(){if(S.has||!S.post)return;var pool=[];for(var i=0;i<S.post.comments.length;i++)pool.push(i);for(var j=pool.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var t=pool[j];pool[j]=pool[k];pool[k]=t}var pick=pool[0];ALL[S.user+'_'+S.post.id]=pick;ALL[S.user+'_'+S.post.id+'_copied']=true;LS('all',ALL);var text=S.post.comments[pick];try{navigator.clipboard.writeText(text)}catch(_){}S.done.add(S.post.id);var card=document.getElementById('cc-'+S.post.id);if(card)card.classList.add('done');renderStats();reloadModalCmt()}
-function doLogin(){var h=$('hinp').value.trim();if(!h)return $('auth-err').textContent='Isi handle dulu ya';if(h.length>40)return $('auth-err').textContent='Maks 40 karakter';LS('user',h);location.reload()}
+function doLogin(){var h=$('hinp').value.trim();if(!h)return $('auth-err').textContent='Isi akun Instagram dulu ya';if(h.length>40)return $('auth-err').textContent='Maks 40 karakter';LS('user',h);location.reload()}
 function doLogout(){LS('user',null);location.reload()}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 window.openModal=openModal;window.doAssign=doAssign;window.doLogin=doLogin;window.doLogout=doLogout;window.closeModal=closeModal;

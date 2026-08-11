@@ -2,7 +2,7 @@
 """
 BUMEN — Social Media Intelligence Platform
 ============================================
-- Comment Desk for team-based Instagram comment management
+- BUMEN Fans Club for team-based Instagram comment management
 - Live comment scraping + sentiment analysis
 - Admin dashboard with real-time intelligence
 """
@@ -251,7 +251,7 @@ def generate_comments(description, title):
 # ===========================================================================
 
 # Main app HTML (inline SPA)
-HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
+HTML = r'''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>BUMEN Fans Club</title>
 <style>
 :root{--bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--ink:#fafafa;--muted:#a1a1aa;--line:rgba(255,255,255,.06);--brand:#818cf8;--brand2:#c084fc;--brand3:#f472b6;--radius:24px;--radius-sm:16px}
 *,*::before,*::after{box-sizing:border-box}
@@ -352,8 +352,8 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .login-card .divider span{padding:0 16px}
 .auth-pg{display:none}
 </style></head><body>
-<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>Comment Desk</h1><p class="subtitle">Internal Workspace by BUMEN Intelligence</p><div class="alert"><span class="alert-icon">💡</span><span>Komentar hanya untuk direview &amp; dicopy. Tidak ada yang diposting otomatis ke Instagram.</span></div><div class="field"><label for="hinp">Handle Anda</label><input id="hinp" placeholder="contoh: reviewer-01" maxlength="40" autocomplete="off"></div><button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button><p id="auth-err" class="error"></p></div></div>
-<div id="app-v" class="app-v"><div class="topbar"><h1>💬 Comment Desk</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
+<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>BUMEN Fans Club</h1><p class="subtitle">Community by BUMEN Intelligence</p><div class="alert"><span class="alert-icon">💡</span><span>Komentar hanya untuk direview &amp; dicopy. Tidak ada yang diposting otomatis ke Instagram.</span></div><div class="field"><label for="hinp">Akun Instagram</label><input id="hinp" placeholder="contoh: @senadavina" maxlength="40" autocomplete="off"></div><button class="btn btn-primary" onclick="doLogin()">Gabung Fans Club</button><p id="auth-err" class="error"></p></div></div>
+<div id="app-v" class="app-v"><div class="topbar"><h1>💬 BUMEN Fans Club</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
 <section class="carousel-section"><p class="carousel-label">Pilih Postingan</p><div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
 <div class="stats-bar" id="stats-bar"></div>
 <div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-topbar"><button class="mbtn" onclick="closeModal()">← Kembali</button><span class="mtitle" id="modal-title"></span><button class="mbtn" onclick="closeModal()">✕ Tutup</button></div><div class="modal-hero"><img id="modal-img" src="" alt=""></div><div class="modal-body"><p class="info-line" id="modal-url"></p><div class="post-desc" id="modal-desc"></div><div class="cmt-section"><p class="cmt-section-label">💬 Komentar</p><div id="modal-cmt"></div></div></div><div class="dominant-cta"><button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button></div></div></div></div>
@@ -368,7 +368,7 @@ async function openModal(id){S.post=S.posts.find(x=>x.id===id);if(!S.post)return
 async function reloadModalCmt(){try{const d=await api("/api/assignments?post_id="+S.post.id);S.has=d.items.length>0;const btn=$("btn-ambil"),copied=d.items.length&&d.items[0].status==="copied";if(copied){btn.textContent="🔗 Buka Post di IG";btn.disabled=false;btn.className="btn-ambil done";btn.onclick=()=>window.open(S.post.source_url,"_blank")}else if(S.has){btn.textContent="Tersalin ✓";btn.disabled=true;btn.className="btn-ambil done"}else{btn.textContent="🎲 Ambil & Copy Komentar";btn.disabled=false;btn.className="btn-ambil";btn.onclick=doAssign}$("modal-cmt").innerHTML=d.items.length?d.items.map(x=>'<div class="cmt-card"><p class="cmt-body">'+esc(x.body)+'</p><span class="cmt-tag '+(x.status==='copied'?'copied':'assigned')+'">'+(x.status==='copied'?'✓ Sudah di-copy':'📋 Baru di-assign')+'</span></div>').join(""):'<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>'}catch(e){$("modal-cmt").innerHTML='<div class="empty-msg">Gagal memuat.</div>'}}
 function closeModal(){$("modal-overlay").classList.remove("open");document.body.style.overflow='';S.done.forEach(pid=>{const c=document.getElementById("cc-"+pid);if(c)c.classList.add("done")});renderStats()}
 async function doAssign(){if(S.has||!S.post)return;try{const d=await api("/api/assign",{method:"POST",body:JSON.stringify({post_id:S.post.id})});const a=await api("/api/assignments?post_id="+S.post.id);if(a.items.length){const cmt=a.items[0];await api("/api/copy",{method:"POST",body:JSON.stringify({assignment_id:cmt.id})});try{await navigator.clipboard.writeText(cmt.body)}catch(_){}S.done.add(S.post.id);const card=document.getElementById("cc-"+S.post.id);if(card)card.classList.add("done");renderStats()}await reloadModalCmt()}catch(e){alert(e.message)}}
-async function doLogin(){const h=$("hinp").value.trim();if(!h)return $("auth-err").textContent="Isi handle dulu ya";try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}catch(e){$("auth-err").textContent=e.message}}
+async function doLogin(){const h=$("hinp").value.trim();if(!h)return $("auth-err").textContent="Isi akun Instagram dulu ya";try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}catch(e){$("auth-err").textContent=e.message}}
 async function doLogout(){await api("/api/logout",{method:"POST"});location.reload()}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 boot();
@@ -550,7 +550,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/api/login":
                 d = json_body(self); h = " ".join(str(d.get("handle", "")).strip().split())
-                if not h or len(h) > 40: return send(self, 400, e("Masukkan handle yang valid (maks 40 karakter)"))
+                if not h or len(h) > 40: return send(self, 400, e("Masukkan akun Instagram yang valid (maks 40 karakter)"))
                 c = db(); n = c.execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
                 row = c.execute("SELECT * FROM users WHERE handle=?", (h,)).fetchone()
                 if not row:
