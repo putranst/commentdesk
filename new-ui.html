@@ -1,4 +1,4 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>BUMEN Fans Club</title>
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
 <style>
 :root{--bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--ink:#fafafa;--muted:#a1a1aa;--line:rgba(255,255,255,.06);--brand:#818cf8;--brand2:#c084fc;--brand3:#f472b6;--radius:24px;--radius-sm:16px}
 *,*::before,*::after{box-sizing:border-box}
@@ -87,14 +87,14 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 </style></head><body>
 
 <div id="auth-v" class="auth-pg"><div class="auth-card">
-<div class="icon">💬</div><h1>BUMEN Fans Club</h1><p class="tag">Masuk pakai handle tim internal</p>
+<div class="icon">💬</div><h1>Comment Desk</h1><p class="tag">Masuk pakai handle tim internal</p>
 <div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
-<input id="hinp" maxlength="40" placeholder="contoh: @senadavina" autocomplete="off" enterkeyhint="go">
-<button class="btn btn-primary" onclick="doLogin()">Gabung Fans Club</button>
+<input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
+<button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
 <p id="auth-err" class="err-text"></p>
 </div></div>
 
-<div id="app-v" class="app-v"><div class="topbar"><h1>💬 BUMEN Fans Club</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
+<div id="app-v" class="app-v"><div class="topbar"><h1>💬 Comment Desk</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
 <section class="carousel-section"><p class="carousel-label">Pilih Postingan</p>
 <div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
 <div class="stats-bar" id="stats-bar"></div>
@@ -160,7 +160,7 @@ async function doAssign(){if(S.has||!S.post)return;try{const d=await api("/api/a
     try{await navigator.clipboard.writeText(cmt.body)}catch(_){}
     S.done.add(S.post.id);const card=document.getElementById("cc-"+S.post.id);if(card)card.classList.add("done");renderStats()}
   await reloadModalCmt()}catch(e){alert(e.message)}}
-async function doLogin(){const h=$("hinp").value.trim();if(!h)return $("auth-err").textContent="Isi akun Instagram dulu ya";try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}catch(e){$("auth-err").textContent=e.message}}
+async function doLogin(){const h=$("hinp").value.trim();if(!h)return $("auth-err").textContent="Isi handle dulu ya";try{await api("/api/login",{method:"POST",body:JSON.stringify({handle:h})});location.reload()}catch(e){$("auth-err").textContent=e.message}}
 async function doLogout(){await api("/api/logout",{method:"POST"});location.reload()}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 window.openModal=openModal;window.doAssign=doAssign;window.doCopy=doCopy;window.doLogin=doLogin;window.doLogout=doLogout;window.closeModal=closeModal;
