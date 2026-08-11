@@ -650,3 +650,4 @@ if __name__ == "__main__":
     print(f"BUMEN Intelligence ➜  http://0.0.0.0:{PORT}")
     print(f"  Admin: http://0.0.0.0:{PORT}/admin")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+# test deploy
