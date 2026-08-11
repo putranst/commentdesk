@@ -565,6 +565,24 @@ class Handler(BaseHTTPRequestHandler):
                 if not post: return send(self, 404, e("Post not found"))
                 count = scrape_live_comments(post["source_url"], pid)
                 return send(self, 200, json.dumps({"count": count}))
+            if path == "/api/admin/live-comments":
+                if not self._admin_user(): return send(self, 401, e("Not signed in"))
+                d = json_body(self)
+                pid = int(d.get("post_id", 0))
+                comments = d.get("comments", [])
+                c = db(); saved = 0
+                for cmt in comments:
+                    body = cmt.get("body", "").strip()
+                    if len(body) < 3: continue
+                    score = score_sentiment(body)
+                    label = sentiment_label(score)
+                    try:
+                        c.execute("INSERT OR IGNORE INTO live_comments(post_id, username, body, sentiment_score, sentiment_label) VALUES(?,?,?,?,?)",
+                            (pid, cmt.get("username", ""), body, score, label))
+                        if c.rowcount > 0: saved += 1
+                    except: pass
+                c.commit(); c.close()
+                return send(self, 200, json.dumps({"saved": saved}))
             u = current_user(self)
             if not u: return send(self, 401, e("Not signed in"))
             d = json_body(self); c = db()
