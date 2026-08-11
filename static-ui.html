@@ -1,11 +1,6 @@
 <!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Comment Desk</title>
 <style>
-:root{
-  --bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);
-  --ink:#fafafa;--muted:#a1a1aa;--line:rgba(255,255,255,.06);
-  --brand:#818cf8;--brand2:#c084fc;--brand3:#f472b6;
-  --radius:24px;--radius-sm:16px;
-}
+:root{--bg:#09090b;--bg2:#121217;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--ink:#fafafa;--muted:#a1a1aa;--line:rgba(255,255,255,.06);--brand:#818cf8;--brand2:#c084fc;--brand3:#f472b6;--radius:24px;--radius-sm:16px}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(99,102,241,.12),transparent),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(192,132,252,.08),transparent),radial-gradient(ellipse 50% 30% at 50% 50%,rgba(244,114,182,.05),transparent)}
@@ -18,217 +13,119 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .auth-card .alert{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);border-radius:var(--radius-sm);padding:14px 18px;color:#a5b4fc;font-size:13px;line-height:1.5;margin-bottom:24px;text-align:left}
 .auth-card input{font:inherit;width:100%;padding:15px 18px;background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius-sm);outline:none;margin-bottom:16px;color:var(--ink);font-size:15px;transition:all .2s}
 .auth-card input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(99,102,241,.12)}
-.btn{font:inherit;font-weight:700;cursor:pointer;transition:all .2s;border:none;outline:none}
-.btn:active{transform:scale(.97)}
+.btn{font:inherit;font-weight:700;cursor:pointer;transition:all .2s;border:none;outline:none}.btn:active{transform:scale(.97)}
 .btn-primary{width:100%;padding:16px;border-radius:var(--radius-sm);font-size:16px;letter-spacing:-.2px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;box-shadow:0 4px 24px rgba(99,102,241,.25)}
 .btn-primary:hover{box-shadow:0 6px 32px rgba(99,102,241,.35)}
 .err-text{color:#f87171;font-size:13px;margin-top:8px}
-.app-v{display:none;flex-direction:column;min-height:100vh}
-.app-v.active{display:flex}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.app-v{display:none;flex-direction:column;min-height:100vh}.app-v.active{display:flex}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
 .topbar h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.2px}
 .topbar .hi{font-size:13px;color:var(--muted)}
-.btn-ghost{background:0;color:var(--muted);padding:8px 16px;font-size:13px;border-radius:12px}
-.btn-ghost:hover{color:var(--ink);background:var(--surface2)}
-.carousel-section{padding:20px 0 12px;flex:0 0 auto}
-.carousel-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 24px 16px}
-.carousel-viewport{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:0 24px;scrollbar-width:none}
+.btn-ghost{background:0;color:var(--muted);padding:8px 16px;font-size:13px;border-radius:12px}.btn-ghost:hover{color:var(--ink);background:var(--surface2)}
+/* ── Center-peek Carousel ── */
+.carousel-section{padding:12px 0 8px;flex:0 0 auto;position:relative}
+.carousel-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 24px 12px;text-align:center}
+.carousel-viewport{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:0 calc(50vw - 150px);scrollbar-width:none}
 .carousel-viewport::-webkit-scrollbar{display:none}
-.carousel-track{display:flex;gap:14px;padding:8px 0;align-items:stretch}
-.ccard{flex:0 0 280px;scroll-snap-align:center;border-radius:var(--radius);overflow:hidden;background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;height:60vh;display:flex;flex-direction:column}
-.ccard:hover{transform:translateY(-4px);border-color:rgba(129,140,248,.3);box-shadow:0 8px 40px rgba(99,102,241,.15)}
-.ccard:active{transform:scale(.97)}
-.ccard img{width:100%;height:65%;object-fit:cover;display:block;background:var(--surface2)}
-.ccard .card-body{padding:16px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
-.ccard .card-title{font-size:14px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.ccard .card-meta{font-size:12px;color:var(--muted);margin-top:6px}
-.ccard.done{opacity:.45;filter:grayscale(.6)}
+.carousel-track{display:flex;gap:16px;padding:12px 0;align-items:center}
+/* Card */
+.ccard{flex:0 0 280px;scroll-snap-align:center;border-radius:var(--radius);overflow:hidden;background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;height:58vh;display:flex;flex-direction:column;transform:scale(.82);opacity:.4;filter:brightness(.6)}
+.ccard.active{transform:scale(1);opacity:1;filter:brightness(1);border-color:rgba(129,140,248,.4);box-shadow:0 12px 60px rgba(99,102,241,.2);z-index:2}
+.ccard:hover:not(.active){transform:scale(.87);opacity:.6}
+.ccard img{width:100%;height:62%;object-fit:cover;display:block;background:var(--surface2)}
+.ccard .card-body{padding:14px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.ccard .card-title{font-size:13px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ccard .card-meta{font-size:11px;color:var(--muted);margin-top:4px}
+.ccard.active .card-title{font-size:15px}.ccard.active .card-meta{font-size:12px}
+/* Done state */
+.ccard.done{opacity:.35!important;filter:grayscale(.7)!important;transform:scale(.82)!important}
+.ccard.done.active{transform:scale(.88)!important;opacity:.5!important}
 .ccard.done::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;font-weight:900;color:#22c55e;z-index:5;text-shadow:0 0 40px rgba(34,197,94,.5);animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
 .ccard.done::before{content:'';position:absolute;inset:0;background:rgba(9,9,11,.5);z-index:4}
 @keyframes popIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-.carousel-dots{display:flex;justify-content:center;gap:8px;padding:16px 0 8px}
-.carousel-dots .dot{width:8px;height:8px;border-radius:99px;background:var(--line);transition:all .3s}
-.carousel-dots .dot.active{background:var(--brand);width:24px}
+/* ── Stats Bar ── */
+.stats-bar{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 24px;max-width:500px;margin:0 auto;width:100%}
+.stat-item{flex:1;background:rgba(255,255,255,.03);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;padding:18px 14px;text-align:center;transition:all .3s}
+.stat-item:nth-child(1){border-color:rgba(129,140,248,.15)}.stat-item:nth-child(2){border-color:rgba(192,132,252,.15)}.stat-item:nth-child(3){border-color:rgba(244,114,182,.15)}
+.stat-item .val{font-size:28px;font-weight:800;letter-spacing:-.5px}
+.stat-item:nth-child(1) .val{background:linear-gradient(135deg,#818cf8,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item:nth-child(2) .val{background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item:nth-child(3) .val{background:linear-gradient(135deg,#f472b6,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+/* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex;animation:fadeIn .3s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal-sheet{width:100%;max-width:560px;max-height:92vh;background:var(--bg2);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line);border-bottom:none;animation:slideUp .4s cubic-bezier(.16,1,.3,1)}
+.modal-sheet{width:100%;max-width:560px;max-height:94vh;background:var(--bg2);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line);border-bottom:none;animation:slideUp .4s cubic-bezier(.16,1,.3,1)}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);background:rgba(18,18,23,.95);backdrop-filter:blur(20px)}
+.modal-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(18,18,23,.95);backdrop-filter:blur(20px);flex-shrink:0}
 .modal-topbar .mbtn{background:0;color:var(--muted);border:none;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:8px 12px;border-radius:12px;transition:all .2s}
 .modal-topbar .mbtn:hover{color:var(--ink);background:var(--surface2)}
-.modal-topbar .mtitle{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;padding:0 8px}
-.modal-hero{position:relative;overflow:hidden}
-.modal-hero img{width:100%;max-height:240px;object-fit:cover;display:block}
-.modal-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(transparent,var(--bg2))}
-.modal-body{flex:1;overflow-y:auto;padding:20px}
-.modal-body .info-line{font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:20px}
-.cmt-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:20px;margin-bottom:20px;animation:fadeUp .4s ease}
-.cmt-card .cmt-body{font-size:15px;line-height:1.7;margin:0 0 16px;color:var(--ink)}
+.modal-topbar .mtitle{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;padding:0 6px}
+.modal-hero{position:relative;overflow:hidden;flex:0 0 44vh;min-height:200px}
+.modal-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.modal-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg2));pointer-events:none}
+.modal-body{flex:1;overflow-y:auto;padding:0}
+.modal-body .post-desc{padding:16px 20px 8px;font-size:13px;line-height:1.7;color:var(--muted);border-bottom:1px solid var(--line);white-space:pre-line}
+.modal-body .info-line{font-size:11px;color:var(--muted);word-break:break-all;padding:8px 20px 0}
+.modal-body .cmt-section{padding:16px 20px 20px}
+.cmt-section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px}
+.cmt-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;margin-bottom:12px;animation:fadeUp .4s ease}
+.cmt-card .cmt-body{font-size:14px;line-height:1.7;margin:0 0 14px;color:var(--ink)}
 .cmt-card .cmt-tag{display:inline-block;font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;margin-bottom:14px}
-.cmt-tag.copied{background:rgba(34,197,94,.12);color:#22c55e}
-.cmt-tag.assigned{background:rgba(99,102,241,.12);color:#818cf8}
-.cmt-card .btn-copy{width:100%;padding:14px;font:inherit;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
-.cmt-card .btn-copy:active{transform:scale(.97)}
-.cmt-card .btn-copy.done{background:linear-gradient(135deg,#22c55e,#16a34a)!important}
-.dominant-cta{padding:16px 20px;border-top:1px solid var(--line);background:rgba(18,18,23,.95);backdrop-filter:blur(20px)}
-.dominant-cta .btn-ambil{width:100%;padding:18px;font:inherit;font-size:16px;font-weight:800;letter-spacing:-.2px;border:none;border-radius:16px;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--brand),var(--brand2),var(--brand3));color:#fff;box-shadow:0 4px 30px rgba(99,102,241,.3)}
+.cmt-tag.copied{background:rgba(34,197,94,.12);color:#22c55e}.cmt-tag.assigned{background:rgba(99,102,241,.12);color:#818cf8}
+.cmt-card .btn-copy{width:100%;padding:13px;font:inherit;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+.cmt-card .btn-copy:active{transform:scale(.97)}.cmt-card .btn-copy.done{background:linear-gradient(135deg,#22c55e,#16a34a)!important}
+.dominant-cta{padding:14px 20px;border-top:1px solid var(--line);background:rgba(18,18,23,.95);backdrop-filter:blur(20px);flex-shrink:0}
+.dominant-cta .btn-ambil{width:100%;padding:16px;font:inherit;font-size:16px;font-weight:800;letter-spacing:-.2px;border:none;border-radius:16px;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--brand),var(--brand2),var(--brand3));color:#fff;box-shadow:0 4px 30px rgba(99,102,241,.3)}
 .dominant-cta .btn-ambil:hover{box-shadow:0 6px 40px rgba(99,102,241,.45)}
 .dominant-cta .btn-ambil:active{transform:scale(.97)}
 .dominant-cta .btn-ambil:disabled{opacity:.5;cursor:not-allowed;background:var(--surface2);box-shadow:none;color:var(--muted)}
 .empty-msg{padding:32px;text-align:center;color:var(--muted);font-size:14px}
-@media(min-width:600px){.ccard{flex:0 0 320px}}
-@media(min-width:860px){.ccard{flex:0 0 340px}}
+@media(min-width:600px){.ccard{flex:0 0 300px;height:62vh}.carousel-viewport{padding:0 calc(50vw - 165px)}}
+@media(min-width:860px){.ccard{flex:0 0 320px}.carousel-viewport{padding:0 calc(50vw - 175px)}}
 </style></head><body>
-<div id="auth-v" class="auth-pg">
-  <div class="auth-card">
-    <div class="icon">💬</div>
-    <h1>Comment Desk</h1>
-    <p class="tag">Masuk pakai handle tim internal</p>
-    <div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
-    <input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
-    <button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
-    <p id="auth-err" class="err-text"></p>
-  </div>
+
+<div id="auth-v" class="auth-pg"><div class="auth-card">
+<div class="icon">💬</div><h1>Comment Desk</h1><p class="tag">Masuk pakai handle tim internal</p>
+<div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div>
+<input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go">
+<button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button>
+<p id="auth-err" class="err-text"></p>
+</div></div>
+
+<div id="app-v" class="app-v"><div class="topbar"><h1>💬 Comment Desk</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
+<section class="carousel-section"><p class="carousel-label">Pilih Postingan</p>
+<div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
+<div class="stats-bar" id="stats-bar"></div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet"><div class="modal-topbar">
+<button class="mbtn" onclick="closeModal()">← Kembali</button><span class="mtitle" id="modal-title"></span><button class="mbtn" onclick="closeModal()">✕ Tutup</button>
+</div><div class="modal-hero"><img id="modal-img" src="" alt=""></div><div class="modal-body">
+<p class="info-line" id="modal-url"></p><div class="post-desc" id="modal-desc"></div>
+<div class="cmt-section"><p class="cmt-section-label">💬 Komentar</p><div id="modal-cmt"></div></div>
+</div><div class="dominant-cta"><button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button></div></div></div>
 </div>
-<div id="app-v" class="app-v">
-  <div class="topbar">
-    <h1>💬 Comment Desk</h1>
-    <span class="hi" id="hi"></span>
-    <button class="btn btn-ghost" onclick="doLogout()">Keluar</button>
-  </div>
-  <section class="carousel-section">
-    <p class="carousel-label">Pilih Postingan</p>
-    <div class="carousel-viewport" id="carousel-vp">
-      <div class="carousel-track" id="carousel-track"></div>
-    </div>
-    <div class="carousel-dots" id="carousel-dots"></div>
-  </section>
-  <div class="modal-overlay" id="modal-overlay">
-    <div class="modal-sheet" id="modal-sheet">
-      <div class="modal-topbar">
-        <button class="mbtn" onclick="closeModal()">← Kembali</button>
-        <span class="mtitle" id="modal-title"></span>
-        <button class="mbtn" onclick="closeModal()">✕ Tutup</button>
-      </div>
-      <div class="modal-body" id="modal-body">
-        <div class="modal-hero"><img id="modal-img" src="" alt=""></div>
-        <p class="info-line" id="modal-url"></p>
-        <div id="modal-cmt"></div>
-      </div>
-      <div class="dominant-cta">
-        <button class="btn-ambil" id="btn-ambil" onclick="doAssign()">🎲 Ambil &amp; Copy Komentar</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 <script>
+const $=id=>document.getElementById(id);
+const S={posts:[],post:null,has:false,done:new Set()};
+
 var POSTS=__POSTS_JSON__;
 (function(){
 var $=function(id){return document.getElementById(id)};
 var LS=function(k,v){try{return v===void 0?JSON.parse(localStorage.getItem('cd_'+k)):localStorage.setItem('cd_'+k,JSON.stringify(v))}catch(e){return v===void 0?null:void 0}};
 var S={user:null,post:null,has:false,done:new Set()},ALL=LS('all')||{};
-
-function boot(){
-  S.user=LS('user');
-  if(S.user){
-    $('auth-v').style.display='none';$('app-v').classList.add('active');
-    $('hi').textContent='Halo, '+S.user;
-    // load done state from localStorage
-    POSTS.forEach(function(p){
-      var key=S.user+'_'+p.id;
-      if(ALL[key+'_copied'])S.done.add(p.id);
-    });
-    renderCarousel();
-  }
-}
-
-function renderCarousel(){
-  var track=$('carousel-track'),dots=$('carousel-dots');
-  track.innerHTML=POSTS.map(function(p){
-    var isDone=S.done.has(p.id);
-    return '<div class="ccard'+(isDone?' done':'')+'" id="cc-'+p.id+'" onclick="openModal('+p.id+')">'+
-      '<img src="'+esc(p.thumb||'')+'" alt="'+esc(p.title)+'" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div style=height:65%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:40px>📷</div>\')">'+
-      '<div class="card-body"><div class="card-title">'+esc(p.title)+'</div><div class="card-meta">'+p.comments.length+' komentar'+(isDone?' • ✓ Selesai':'')+'</div></div>'+
-      '</div>';
-  }).join('');
-  dots.innerHTML=POSTS.map(function(_,i){return '<div class="dot'+(i===0?' active':'')+'"></div>'}).join('');
-  var vp=$('carousel-vp');
-  vp.onscroll=function(){
-    var idx=Math.round(vp.scrollLeft/(280+14));
-    dots.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('active',i===idx)});
-  };
-  if(POSTS.length>2){
-    var mid=Math.floor(POSTS.length/2);
-    setTimeout(function(){vp.scrollTo({left:mid*(280+14),behavior:'smooth'})},400);
-  }
-}
-
-function openModal(id){
-  S.post=POSTS.find(function(x){return x.id===id});if(!S.post)return;
-  $('modal-title').textContent=S.post.title;
-  $('modal-img').src=S.post.thumb||'';
-  $('modal-img').onerror=function(){this.style.display='none'};
-  $('modal-url').textContent=S.post.source_url||'';
-  $('modal-overlay').classList.add('open');
-  document.body.style.overflow='hidden';
-  reloadModalCmt();
-}
-
-function reloadModalCmt(){
-  var key=S.user+'_'+S.post.id,assign=ALL[key];
-  S.has=!!(assign!==void 0);
-  var btn=$('btn-ambil');
-  btn.disabled=S.has;
-  btn.textContent=S.has?'✓ Sudah Ambil 1 Komentar':'🎲 Ambil & Copy Komentar';
-  if(assign!==void 0){
-    var c=S.post.comments[assign],copied=ALL[key+'_copied'];
-    $('modal-cmt').innerHTML='<div class="cmt-card"><p class="cmt-body">'+esc(c)+'</p><span class="cmt-tag '+(copied?'copied':'assigned')+'">'+(copied?'✓ Sudah di-copy':'📋 Baru di-assign')+'</span><button class="btn-copy'+(copied?' done':'')+'" onclick="doCopy(this)">'+(copied?'Tersalin ✓':'Copy ke Clipboard')+'</button></div>';
-  } else {
-    $('modal-cmt').innerHTML='<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>';
-  }
-}
-
-function closeModal(){
-  $('modal-overlay').classList.remove('open');
-  document.body.style.overflow='';
-  S.done.forEach(function(pid){var c=document.getElementById('cc-'+pid);if(c)c.classList.add('done')});
-}
-
-function doAssign(){
-  if(S.has||!S.post)return;
-  var pool=[];
-  for(var i=0;i<S.post.comments.length;i++)pool.push(i);
-  for(var j=pool.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var t=pool[j];pool[j]=pool[k];pool[k]=t}
-  ALL[S.user+'_'+S.post.id]=pool[0];
-  LS('all',ALL);
-  reloadModalCmt();
-}
-
-function doCopy(btn){
-  var assign=ALL[S.user+'_'+S.post.id];if(assign===void 0)return;
-  var text=S.post.comments[assign];
-  try{navigator.clipboard.writeText(text)}catch(_){}
-  ALL[S.user+'_'+S.post.id+'_copied']=true;
-  LS('all',ALL);
-  S.done.add(S.post.id);
-  var card=document.getElementById('cc-'+S.post.id);if(card)card.classList.add('done');
-  btn.textContent='Tersalin ✓';btn.classList.add('done');
-  setTimeout(function(){btn.textContent='Copy ke Clipboard';btn.classList.remove('done')},2000);
-  reloadModalCmt();
-}
-
-function doLogin(){
-  var h=$('hinp').value.trim();
-  if(!h)return $('auth-err').textContent='Isi handle dulu ya';
-  if(h.length>40)return $('auth-err').textContent='Maks 40 karakter';
-  LS('user',h);location.reload();
-}
-
+function boot(){S.user=LS('user');if(S.user){$('auth-v').style.display='none';$('app-v').classList.add('active');$('hi').textContent='Halo, '+S.user;POSTS.forEach(function(p){var key=S.user+'_'+p.id;if(ALL[key+'_copied'])S.done.add(p.id)});renderCarousel();renderStats()}}
+function renderCarousel(){var track=$('carousel-track'),cw=window.innerWidth<600?300:window.innerWidth<860?320:340;track.innerHTML=POSTS.map(function(p){var isDone=S.done.has(p.id);return '<div class="ccard'+(isDone?' done':'')+'" id="cc-'+p.id+'" onclick="openModal('+p.id+')"><img src="'+esc(p.thumb||'')+'" alt="'+esc(p.title)+'" loading="lazy" onerror="this.style.display=\'none\';this.insertAdjacentHTML(\'afterend\',\'<div style=height:62%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:36px>📷</div>\')"><div class="card-body"><div class="card-title">'+esc(p.title)+'</div><div class="card-meta">'+p.comments.length+' komentar'+(isDone?' • ✓':'')+'</div></div></div>'}).join('');var vp=$('carousel-vp');vp.onscroll=function(){updateActive()};if(POSTS.length>2){var mid=Math.floor(POSTS.length/2);setTimeout(function(){vp.scrollTo({left:mid*(cw+16),behavior:'smooth'})},400)}setTimeout(updateActive,600)}
+function updateActive(){var cards=document.querySelectorAll('.ccard'),vp=$('carousel-vp'),vpr=vp.getBoundingClientRect(),best=null,bestDist=Infinity;cards.forEach(function(c){var cr=c.getBoundingClientRect(),ccx=cr.left+cr.width/2,vcx=vpr.left+vpr.width/2,dist=Math.abs(ccx-vcx);c.classList.remove('active');if(dist<bestDist){bestDist=dist;best=c}});if(best)best.classList.add('active')}
+function renderStats(){var t=POSTS.length,d=S.done.size,r=t-d;$('stats-bar').innerHTML='<div class="stat-item"><div class="val">'+t+'</div><div class="lbl">Total Post</div></div><div class="stat-item"><div class="val">'+d+'</div><div class="lbl">Selesai</div></div><div class="stat-item"><div class="val">'+r+'</div><div class="lbl">Tersisa</div></div>'}
+function openModal(id){S.post=POSTS.find(function(x){return x.id===id});if(!S.post)return;$('modal-title').textContent=S.post.title;$('modal-img').src=S.post.thumb||'';$('modal-img').onerror=function(){this.style.display='none'};$('modal-url').textContent=S.post.source_url||'';$('modal-desc').textContent=S.post.description||'';$('modal-overlay').classList.add('open');document.body.style.overflow='hidden';reloadModalCmt()}
+function reloadModalCmt(){var key=S.user+'_'+S.post.id,assign=ALL[key];S.has=!!(assign!==void 0);var btn=$('btn-ambil'),copied=S.has&&ALL[key+'_copied'];if(copied){btn.textContent='🔗 Buka Post di IG';btn.disabled=false;btn.className='btn-ambil done';btn.onclick=function(){window.open(S.post.source_url,'_blank')}}else if(S.has){btn.textContent='Tersalin ✓';btn.disabled=true;btn.className='btn-ambil done'}else{btn.textContent='🎲 Ambil & Copy Komentar';btn.disabled=false;btn.className='btn-ambil';btn.onclick=doAssign}if(assign!==void 0){var c=S.post.comments[assign];$('modal-cmt').innerHTML='<div class="cmt-card"><p class="cmt-body">'+esc(c)+'</p><span class="cmt-tag '+(copied?'copied':'assigned')+'">'+(copied?'✓ Sudah di-copy':'📋 Baru di-assign')+'</span></div>'}else{$('modal-cmt').innerHTML='<div class="empty-msg">Klik tombol di bawah untuk dapat satu komentar acak ✨</div>'}}
+function closeModal(){$('modal-overlay').classList.remove('open');document.body.style.overflow='';S.done.forEach(function(pid){var c=document.getElementById('cc-'+pid);if(c)c.classList.add('done')});renderStats()}
+function doAssign(){if(S.has||!S.post)return;var pool=[];for(var i=0;i<S.post.comments.length;i++)pool.push(i);for(var j=pool.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var t=pool[j];pool[j]=pool[k];pool[k]=t}var pick=pool[0];ALL[S.user+'_'+S.post.id]=pick;ALL[S.user+'_'+S.post.id+'_copied']=true;LS('all',ALL);var text=S.post.comments[pick];try{navigator.clipboard.writeText(text)}catch(_){}S.done.add(S.post.id);var card=document.getElementById('cc-'+S.post.id);if(card)card.classList.add('done');renderStats();reloadModalCmt()}
+function doLogin(){var h=$('hinp').value.trim();if(!h)return $('auth-err').textContent='Isi handle dulu ya';if(h.length>40)return $('auth-err').textContent='Maks 40 karakter';LS('user',h);location.reload()}
 function doLogout(){LS('user',null);location.reload()}
-
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-window.openModal=openModal;window.doAssign=doAssign;window.doCopy=doCopy;window.doLogin=doLogin;window.doLogout=doLogout;window.closeModal=closeModal;
+window.openModal=openModal;window.doAssign=doAssign;window.doLogin=doLogin;window.doLogout=doLogout;window.closeModal=closeModal;
 boot();
-})();
-</script></body></html>
+})();</script></body></html>
