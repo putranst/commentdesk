@@ -1,51 +1,67 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BUMEN Intelligence — Admin</title><style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font:400 14px/1.6 system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.login-page{width:100%;max-width:420px;padding:24px}
-.login-card{background:#fff;border-radius:20px;padding:52px 40px 44px;box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 32px rgba(0,0,0,.06);text-align:center}
-.logo{width:72px;height:auto;margin-bottom:20px;display:block;margin-left:auto;margin-right:auto}
-.login-card h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px;color:#0f172a}
-.login-card .subtitle{color:#64748b;font-size:14px;margin-bottom:32px}
-.field{margin-bottom:18px;text-align:left}
-.field label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px}
-.field input{font:inherit;width:100%;padding:14px 16px;border:2px solid #e2e8f0;border-radius:12px;outline:none;font-size:15px;color:#0f172a;background:#f8fafc;transition:all .2s}
-.field input:focus{border-color:#818cf8;box-shadow:0 0 0 4px rgba(129,140,248,.1);background:#fff}
-.field input::placeholder{color:#94a3b8}
-.footer-links{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;font-size:13px}
-.footer-links a{color:#6366f1;text-decoration:none;font-weight:600}
-.footer-links a:hover{text-decoration:underline}
-.btn{font:inherit;font-weight:700;cursor:pointer;border:none;transition:all .2s}
-.btn:active{transform:scale(.97)}
-.btn-primary{width:100%;padding:15px;border-radius:12px;font-size:15px;letter-spacing:-.2px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.25)}
-.btn-primary:hover{box-shadow:0 6px 24px rgba(99,102,241,.35)}
-.error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
-.divider{display:flex;align-items:center;margin:28px 0;color:#cbd5e1;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
-.divider span{padding:0 16px}
-@media(max-width:480px){.login-card{padding:40px 28px 36px}}
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Admin — Comment Desk</title>
+<style>
+:root{--bg:#0f172a;--surface:#1e293b;--ink:#f1f5f9;--muted:#94a3b8;--brand:#818cf8;--brand2:#c084fc;--line:#334155;--radius:16px}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 system-ui,-apple-system,sans-serif;min-height:100vh}
+.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.auth-box{background:var(--surface);border-radius:var(--radius);padding:40px 32px;max-width:420px;width:100%;text-align:center;border:1px solid var(--line);box-shadow:0 4px 24px rgba(0,0,0,.3)}
+.auth-box .icon{font-size:48px;margin-bottom:8px}
+.auth-box h1{font-size:24px;margin:0 0 4px;font-weight:800}
+.auth-box .tag{color:var(--muted);font-size:13px;margin-bottom:24px}
+input{font:inherit;width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:12px;outline:none;margin-bottom:14px;font-size:14px;background:var(--bg);color:var(--ink)}
+input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(129,140,248,.15)}
+.btn{font:inherit;font-weight:700;cursor:pointer;border:none}
+.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:12px;font-size:15px}
+.btn-ghost{background:0;color:var(--muted);padding:8px 14px;font-size:13px;border-radius:8px}
+.btn-sm{padding:10px 22px;font-size:13px;border-radius:10px;width:auto}
+.err{color:#f87171;font-size:13px;margin-top:8px}.ok{color:#34d399;font-size:13px}
+.dash{display:none;padding:24px;max-width:1200px;margin:0 auto}.dash.active{display:block}
+.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.dash-header h1{font-size:22px;margin:0;font-weight:800}.dash-header .sub{color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:22px 20px;border:1px solid var(--line)}
+.stat-card .val{font-size:32px;font-weight:800}.stat-card .lbl{font-size:12px;color:var(--muted);text-transform:uppercase}
+.stat-card .pct{font-size:13px;color:var(--brand);margin-top:4px}
+.section{margin-bottom:28px}.section h3{font-size:15px;font-weight:700;margin:0 0 14px}
+table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
+th,td{padding:10px 14px;text-align:left;font-size:12px}
+th{background:var(--line);font-weight:700;text-transform:uppercase;font-size:10px;color:var(--muted)}
+td{border-top:1px solid var(--line)}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-ok{background:#065f4620;color:#34d399}.badge-new{background:#4338ca20;color:#818cf8}
+.prog-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:60px}
+.prog-fill{height:100%;background:var(--brand);border-radius:3px}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+.add-post-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:28px}
+.add-post-row{display:flex;gap:10px}.add-post-row input{flex:1;margin-bottom:0}
+@media(min-width:700px){.stats{grid-template-columns:repeat(4,1fr)}}
 </style></head><body>
-<div class="login-page">
-<div class="login-card">
-<img class="logo" src="/logo.png" alt="BuMen">
-<h1>BUMEN Intelligence</h1>
-<p class="subtitle">Social Media Intelligence Platform</p>
-<div class="field">
-<label for="pwd">Password Admin</label>
-<input id="pwd" type="password" placeholder="Masukkan password" autocomplete="off">
-</div>
-<button class="btn btn-primary" onclick="login()">Masuk ke Dashboard</button>
-<p class="error" id="err"></p>
-<div class="divider"><span>atau</span></div>
-<p style="font-size:12px;color:#94a3b8;text-align:center">
-Butuh akses admin? Hubungi <a href="#" style="color:#6366f1;text-decoration:none;font-weight:600">ops@bumen.id</a>
-</p>
-</div>
+<div id="auth-v" class="auth-pg"><div class="auth-box">
+<div class="icon">🛡️</div><h1>Admin Panel</h1><p class="tag">Comment Desk</p>
+<input id="apwd" type="password" placeholder="Password admin" autocomplete="off">
+<button class="btn btn-primary" onclick="doAdminLogin()">Masuk</button><p id="auth-err" class="err"></p>
+</div></div>
+<div id="dash-v" class="dash">
+<div class="dash-header"><div><h1>📊 Dashboard</h1><span class="sub" id="dash-time"></span></div><button class="btn btn-ghost" onclick="doAdminLogout()">↩ Logout</button></div>
+<div class="add-post-box"><h3>➕ Tambah Post (URL)</h3><div class="add-post-row"><input id="post-url" placeholder="https://www.instagram.com/p/..."><button class="btn btn-primary btn-sm" onclick="addPost()">Tambah</button></div><p id="add-msg" style="margin-top:8px;font-size:13px"></p></div>
+<div class="stats" id="stats"></div>
+<div class="section"><h3>👥 User</h3><div id="utable"></div></div>
+<div class="section"><h3>📋 Post</h3><div id="ptable"></div></div>
+<div class="section"><h3>🕐 Aktivitas</h3><div id="feed"></div></div>
 </div>
 <script>
-const $=id=>document.getElementById(id)
-async function login(){
-const p=$("pwd").value.trim()
-if(!p)return $("err").textContent="Password diperlukan"
-try{const r=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:p})});if(!r.ok){const d=await r.json();throw Error(d.error||"Login gagal")};location.reload()}catch(e){$("err").textContent=e.message;$("err").style.color="#ef4444"}}
-</script>
-</body></html>
+const $=id=>document.getElementById(id);
+function fmtTime(ts){if(!ts)return"-";return new Date(ts+"Z").toLocaleString("id-ID",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
+async function api(p,o={}){const r=await fetch(p,{headers:{"Content-Type":"application/json"},...o});const d=await r.json();if(!r.ok)throw Error(d.error||"Failed");return d}
+async function loadDash(){try{const d=await api("/api/admin/dashboard");renderStats(d);renderUsers(d.users);renderPosts(d.posts);renderFeed(d.feed)}catch(e){$("dash-v").innerHTML='<div class="loading">Error: '+e.message+'</div>'}}
+function renderStats(d){const t=d.users.length,a=d.users.reduce((s,u)=>s+u.assigned,0),c=d.users.reduce((s,u)=>s+u.copied,0),p=d.posts.filter(p=>p.users_assigned>=t).length;$("stats").innerHTML='<div class="stat-card"><div class="val">'+t+'</div><div class="lbl">Reviewer</div></div><div class="stat-card"><div class="val">'+a+'</div><div class="lbl">Assigned</div><div class="pct">'+c+' copied</div></div><div class="stat-card"><div class="val">'+c+'</div><div class="lbl">Copied</div><div class="pct">'+(t?(c/(a||1)*100).toFixed(0):0)+'%</div></div><div class="stat-card"><div class="val">'+p+'/'+d.posts.length+'</div><div class="lbl">Tuntas</div></div>'}
+function renderUsers(u){if(!u.length){$("utable").innerHTML='<div class="loading">-</div>';return}$("utable").innerHTML='<table><tr><th>Handle</th><th>Join</th><th>Assigned</th><th>Copied</th><th>%</th></tr>'+u.map(u=>'<tr><td><b>'+esc(u.handle)+'</b></td><td>'+fmtTime(u.created_at)+'</td><td>'+u.assigned+'</td><td>'+u.copied+'</td><td><div class="prog-bar"><div class="prog-fill" style="width:'+(u.assigned?(u.copied/u.assigned*100):0)+'%"></div></div></td></tr>').join("")+'</table>'}
+function renderPosts(p){if(!p.length){$("ptable").innerHTML='<div class="loading">-</div>';return}$("ptable").innerHTML='<table><tr><th>Post</th><th>Komen</th><th>Users</th><th>Copy</th><th>%</th></tr>'+p.map(p=>'<tr><td><b>'+esc(p.title)+'</b></td><td>'+p.comment_count+'</td><td>'+p.users_assigned+'</td><td>'+p.users_copied+'</td><td><div class="prog-bar"><div class="prog-fill" style="width:'+(p.users_assigned?(p.users_copied/p.users_assigned*100):0)+'%"></div></div></td></tr>').join("")+'</table>'}
+function renderFeed(f){if(!f.length){$("feed").innerHTML='<div class="loading">-</div>';return}$("feed").innerHTML='<table><tr><th>Waktu</th><th>User</th><th>Post</th><th>Aksi</th></tr>'+f.map(f=>'<tr><td>'+fmtTime(f.ts)+'</td><td>'+esc(f.handle)+'</td><td>'+esc(f.post_title)+'</td><td><span class="badge badge-'+(f.action==='copied'?'ok':'new')+'">'+(f.action==='copied'?'✓ Copy':'📋 Assign')+'</span></td></tr>').join("")+'</table>'}
+async function addPost(){const u=$("post-url").value.trim(),m=$("add-msg");if(!u)return m.innerHTML='<span class="err">URL required</span>';m.innerHTML='<span class="ok">Adding...</span>';try{const d=await api("/api/admin/add-post",{method:"POST",body:JSON.stringify({url:u})});m.innerHTML='<span class="ok">✅ '+esc(d.post.title)+' — '+d.comments_generated+' comments</span>';$("post-url").value='';loadDash()}catch(e){m.innerHTML='<span class="err">❌ '+e.message+'</span>'}}
+async function doAdminLogin(){const p=$("apwd").value.trim();if(!p)return $("auth-err").textContent="Password required";try{await api("/api/admin/login",{method:"POST",body:JSON.stringify({password:p})});$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent=new Date().toLocaleString("id-ID");loadDash()}catch(e){$("auth-err").textContent=e.message}}
+async function boot(){try{await api("/api/admin/me");$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent=new Date().toLocaleString("id-ID");loadDash()}catch(_){}}
+async function doAdminLogout(){try{await api("/api/admin/logout",{method:"POST"});location.reload()}catch(_){location.reload()}}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+boot();
+</script></body></html>

@@ -331,8 +331,28 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .empty-msg{padding:32px;text-align:center;color:var(--muted);font-size:14px}
 @media(min-width:600px){.ccard{flex:0 0 300px;height:62vh}.carousel-viewport{padding:0 calc(50vw - 165px)}}
 @media(min-width:860px){.ccard{flex:0 0 320px}.carousel-viewport{padding:0 calc(50vw - 175px)}}
+
+.login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#f8fafc}
+.login-card{background:#fff;border-radius:20px;padding:48px 36px 40px;max-width:440px;width:100%;text-align:center;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 32px rgba(0,0,0,.06)}
+.login-card .logo{width:64px;height:auto;margin-bottom:20px}
+.login-card h1{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px;color:#0f172a}
+.login-card .subtitle{color:#64748b;font-size:14px;margin-bottom:28px}
+.login-card .alert{background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px 18px;color:#4338ca;font-size:13px;line-height:1.6;margin-bottom:24px;text-align:left;display:flex;gap:10px;align-items:flex-start}
+.login-card .alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.login-card .field{margin-bottom:16px;text-align:left}
+.login-card .field label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px}
+.login-card .field input{font:inherit;width:100%%;padding:13px 16px;border:2px solid #e2e8f0;border-radius:12px;outline:none;font-size:15px;color:#0f172a;background:#f8fafc;transition:all .2s}
+.login-card .field input:focus{border-color:#818cf8;box-shadow:0 0 0 4px rgba(129,140,248,.1);background:#fff}
+.login-card .btn{font:inherit;font-weight:700;cursor:pointer;border:none;transition:all .2s;width:100%%;padding:15px;border-radius:12px;font-size:15px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.25)}
+.login-card .btn:active{transform:scale(.97)}
+.login-card .btn:hover{box-shadow:0 6px 24px rgba(99,102,241,.35)}
+.login-card .error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
+.login-card .divider{display:flex;align-items:center;margin:28px 0;color:#cbd5e1;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.login-card .divider::before,.login-card .divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.login-card .divider span{padding:0 16px}
+.auth-pg{display:none}
 </style></head><body>
-<div id="auth-v" class="auth-pg"><div class="auth-card"><div class="icon">💬</div><h1>Comment Desk</h1><p class="tag">by BUMEN Intelligence</p><div class="alert">Komentar cuma buat di-review &amp; di-copy. Nggak ada yang diposting otomatis ke Instagram.</div><input id="hinp" maxlength="40" placeholder="contoh: reviewer-01" autocomplete="off" enterkeyhint="go"><button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button><p id="auth-err" class="err-text"></p></div></div>
+<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>Comment Desk</h1><p class="subtitle">Internal Workspace by BUMEN Intelligence</p><div class="alert"><span class="alert-icon">💡</span><span>Komentar hanya untuk direview &amp; dicopy. Tidak ada yang diposting otomatis ke Instagram.</span></div><div class="field"><label for="hinp">Handle Anda</label><input id="hinp" placeholder="contoh: reviewer-01" maxlength="40" autocomplete="off"></div><button class="btn btn-primary" onclick="doLogin()">Masuk ke Workspace</button><p id="auth-err" class="error"></p></div></div>
 <div id="app-v" class="app-v"><div class="topbar"><h1>💬 Comment Desk</h1><span class="hi" id="hi"></span><button class="btn btn-ghost" onclick="doLogout()">Keluar</button></div>
 <section class="carousel-section"><p class="carousel-label">Pilih Postingan</p><div class="carousel-viewport" id="carousel-vp"><div class="carousel-track" id="carousel-track"></div></div></section>
 <div class="stats-bar" id="stats-bar"></div>
@@ -388,7 +408,27 @@ input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(129,140,248,.1)}
 table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
 th,td{padding:10px 14px;text-align:left;font-size:12px}
 th{background:var(--line);font-weight:700;text-transform:uppercase;font-size:10px;color:var(--muted)}
-td{border-top:1px solid var(--line)}tr:hover td{background:rgba(129,140,248,.05)}
+td{border-top:1px solid var
+.login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#f8fafc}
+.login-card{background:#fff;border-radius:20px;padding:48px 36px 40px;max-width:440px;width:100%;text-align:center;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 32px rgba(0,0,0,.06)}
+.login-card .logo{width:64px;height:auto;margin-bottom:20px}
+.login-card h1{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px;color:#0f172a}
+.login-card .subtitle{color:#64748b;font-size:14px;margin-bottom:28px}
+.login-card .alert{background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px 18px;color:#4338ca;font-size:13px;line-height:1.6;margin-bottom:24px;text-align:left;display:flex;gap:10px;align-items:flex-start}
+.login-card .alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.login-card .field{margin-bottom:16px;text-align:left}
+.login-card .field label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px}
+.login-card .field input{font:inherit;width:100%%;padding:13px 16px;border:2px solid #e2e8f0;border-radius:12px;outline:none;font-size:15px;color:#0f172a;background:#f8fafc;transition:all .2s}
+.login-card .field input:focus{border-color:#818cf8;box-shadow:0 0 0 4px rgba(129,140,248,.1);background:#fff}
+.login-card .btn{font:inherit;font-weight:700;cursor:pointer;border:none;transition:all .2s;width:100%%;padding:15px;border-radius:12px;font-size:15px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.25)}
+.login-card .btn:active{transform:scale(.97)}
+.login-card .btn:hover{box-shadow:0 6px 24px rgba(99,102,241,.35)}
+.login-card .error{color:#ef4444;font-size:13px;margin-top:10px;min-height:20px}
+.login-card .divider{display:flex;align-items:center;margin:28px 0;color:#cbd5e1;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.login-card .divider::before,.login-card .divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.login-card .divider span{padding:0 16px}
+.auth-pg{display:none}
+(--line)}tr:hover td{background:rgba(129,140,248,.05)}
 .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
 .badge-ok{background:#065f4620;color:var(--green)}.badge-new{background:#4338ca20;color:var(--brand)}.badge-warn{background:#92400e20;color:var(--amber)}.badge-neg{background:#7f1d1d20;color:var(--red)}
 .sent-meter{display:flex;align-items:center;gap:8px;min-width:160px}
@@ -411,7 +451,7 @@ td{border-top:1px solid var(--line)}tr:hover td{background:rgba(129,140,248,.05)
 .add-post-row{display:flex;gap:10px}.add-post-row input{flex:1;margin-bottom:0}
 @media(min-width:700px){.stats{grid-template-columns:repeat(6,1fr)}}
 </style></head><body>
-<div id="auth-v" class="auth-pg"><div class="auth-box"><img src="/logo-transparent.png" alt="BuMen" class="logo"><h1>BUMEN Intelligence</h1><p class="tag">Social Media Intelligence Platform</p><input id="apwd" type="password" placeholder="Password admin" autocomplete="off"><button class="btn btn-primary" onclick="doAdminLogin()">Masuk</button><p id="auth-err" class="err"></p></div></div>
+<div id="auth-v" class="login-page"><div class="login-card"><img class="logo" src="/logo.png" alt="BuMen"><h1>BUMEN Intelligence</h1><p class="subtitle">Social Media Intelligence Platform</p><div class="field"><label for="apwd">Password Admin</label><input id="apwd" type="password" placeholder="Masukkan password" autocomplete="off"></div><button class="btn btn-primary" onclick="doAdminLogin()">Masuk ke Dashboard</button><p id="auth-err" class="error"></p><div class="divider"><span>atau</span></div><p style="font-size:12px;color:#94a3b8;text-align:center">Butuh akses admin? Hubungi <a href="#" style="color:#6366f1;text-decoration:none;font-weight:600">ops@bumen.id</a></p></div></div>
 <div id="dash-v" class="dash">
 <div class="dash-header"><div><h1>📊 BUMEN Intelligence</h1><span class="sub" id="dash-time"></span></div><button class="btn btn-ghost" onclick="doAdminLogout()">↩ Logout</button></div>
 <div class="add-post-box"><h3>➕ Tambah Post + Scrape</h3><div class="add-post-row"><input id="post-url" placeholder="https://www.instagram.com/p/..."><button class="btn btn-primary btn-sm" onclick="addPost()">Tambah & Scrape</button></div><p id="add-msg" style="margin-top:8px;font-size:13px"></p></div>
@@ -457,9 +497,6 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/": return send(self, 200, HTML, "text/html")
         if path == "/admin": return send(self, 200, ADMIN_HTML, "text/html")
-        if path == "/logo-transparent.png":
-            logo = (ROOT / "logo-transparent.png").read_bytes()
-            return send(self, 200, logo, "image/png")
         if path == "/logo.png":
             logo = (ROOT / "bumen-logo.png").read_bytes()
             return send(self, 200, logo, "image/png")
@@ -650,4 +687,3 @@ if __name__ == "__main__":
     print(f"BUMEN Intelligence ➜  http://0.0.0.0:{PORT}")
     print(f"  Admin: http://0.0.0.0:{PORT}/admin")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
-# test deploy
