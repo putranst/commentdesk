@@ -363,6 +363,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 system-ui,
 .auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
 .auth-box{background:var(--surface);border-radius:var(--radius);padding:40px 32px;max-width:420px;width:100%;text-align:center;border:1px solid var(--line);box-shadow:0 4px 24px rgba(0,0,0,.3)}
 .auth-box .icon{font-size:48px;margin-bottom:8px}
+.auth-box .logo{width:80px;height:80px;object-fit:contain;margin-bottom:16px;filter:drop-shadow(0 0 16px rgba(129,140,248,.3))}
 .auth-box h1{font-size:24px;margin:0;font-weight:800;background:linear-gradient(135deg,var(--green),var(--brand));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .auth-box .tag{color:var(--muted);font-size:13px;margin-bottom:24px}
 input,textarea{font:inherit;width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:12px;outline:none;margin-bottom:14px;font-size:14px;background:var(--bg);color:var(--ink)}
@@ -409,7 +410,7 @@ td{border-top:1px solid var(--line)}tr:hover td{background:rgba(129,140,248,.05)
 .add-post-row{display:flex;gap:10px}.add-post-row input{flex:1;margin-bottom:0}
 @media(min-width:700px){.stats{grid-template-columns:repeat(6,1fr)}}
 </style></head><body>
-<div id="auth-v" class="auth-pg"><div class="auth-box"><div class="icon">🛡️</div><h1>BUMEN Intelligence</h1><p class="tag">Social Media Intelligence Platform</p><input id="apwd" type="password" placeholder="Password admin" autocomplete="off"><button class="btn btn-primary" onclick="doAdminLogin()">Masuk</button><p id="auth-err" class="err"></p></div></div>
+<div id="auth-v" class="auth-pg"><div class="auth-box"><img src="/logo.png" alt="BuMen" class="logo"><h1>BUMEN Intelligence</h1><p class="tag">Social Media Intelligence Platform</p><input id="apwd" type="password" placeholder="Password admin" autocomplete="off"><button class="btn btn-primary" onclick="doAdminLogin()">Masuk</button><p id="auth-err" class="err"></p></div></div>
 <div id="dash-v" class="dash">
 <div class="dash-header"><div><h1>📊 BUMEN Intelligence</h1><span class="sub" id="dash-time"></span></div><button class="btn btn-ghost" onclick="doAdminLogout()">↩ Logout</button></div>
 <div class="add-post-box"><h3>➕ Tambah Post + Scrape</h3><div class="add-post-row"><input id="post-url" placeholder="https://www.instagram.com/p/..."><button class="btn btn-primary btn-sm" onclick="addPost()">Tambah & Scrape</button></div><p id="add-msg" style="margin-top:8px;font-size:13px"></p></div>
@@ -455,6 +456,9 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/": return send(self, 200, HTML, "text/html")
         if path == "/admin": return send(self, 200, ADMIN_HTML, "text/html")
+        if path == "/logo.png":
+            logo = (ROOT / "bumen-logo.png").read_bytes()
+            return send(self, 200, logo, "image/png")
         u = current_user(self)
         if path == "/api/admin/me":
             if not self._admin_user(): return send(self, 401, e("Not signed in"))
