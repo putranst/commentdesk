@@ -96,12 +96,10 @@ def init_db():
                 c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (p["thumb"], pid))
             if p.get("description"):
                 c.execute("UPDATE posts SET description = ? WHERE id = ?", (p["description"], pid))
-        # Replace all comments: delete old, insert new from data.json
-        c.execute("DELETE FROM assignments")
-        c.execute("DELETE FROM comments")
+        # Synchronise without destroying reviewer history on restart.
         for p in _data:
             for cmt in p.get("comments", []):
-                c.execute("INSERT INTO comments(post_id, body) VALUES(?,?)", (p["id"], cmt))
+                c.execute("INSERT OR IGNORE INTO comments(post_id, body) VALUES(?,?)", (p["id"], cmt))
     c.commit()
     c.close()
 
@@ -122,6 +120,18 @@ def init_db():
         c.close()
     except sqlite3.OperationalError:
         pass  # column already exists
+
+    # Clean artifacts and duplicates from earlier browser scraping runs.
+    try:
+        c = db()
+        c.execute("DELETE FROM live_comments WHERE body IN ('Like','Reply','Comment','Popular','Threads','Down chevron icon','View all comments','Contact Uploading & Non-Users')")
+        c.execute("DELETE FROM live_comments WHERE username LIKE '#%' OR body LIKE 'duniameutyaVerified%'")
+        c.execute("DELETE FROM live_comments WHERE id NOT IN (SELECT MIN(id) FROM live_comments GROUP BY post_id, body)")
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_live_unique_body ON live_comments(post_id, body)")
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_assignment_one_owner ON assignments(comment_id)")
+        c.commit(); c.close()
+    except sqlite3.Error:
+        pass
 
 # ---------------------------------------------------------------------------
 # fetch Instagram thumbnails via og:image
@@ -466,12 +476,10 @@ def init_db():
                 c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (p["thumb"], pid))
             if p.get("description"):
                 c.execute("UPDATE posts SET description = ? WHERE id = ?", (p["description"], pid))
-        # Replace all comments: delete old, insert new from data.json
-        c.execute("DELETE FROM assignments")
-        c.execute("DELETE FROM comments")
+        # Synchronise without destroying reviewer history on restart.
         for p in _data:
             for cmt in p.get("comments", []):
-                c.execute("INSERT INTO comments(post_id, body) VALUES(?,?)", (p["id"], cmt))
+                c.execute("INSERT OR IGNORE INTO comments(post_id, body) VALUES(?,?)", (p["id"], cmt))
     c.commit()
     c.close()
 
@@ -825,12 +833,10 @@ def init_db():
                 c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (p["thumb"], pid))
             if p.get("description"):
                 c.execute("UPDATE posts SET description = ? WHERE id = ?", (p["description"], pid))
-        # Replace all comments: delete old, insert new from data.json
-        c.execute("DELETE FROM assignments")
-        c.execute("DELETE FROM comments")
+        # Synchronise without destroying reviewer history on restart.
         for p in _data:
             for cmt in p.get("comments", []):
-                c.execute("INSERT INTO comments(post_id, body) VALUES(?,?)", (p["id"], cmt))
+                c.execute("INSERT OR IGNORE INTO comments(post_id, body) VALUES(?,?)", (p["id"], cmt))
     c.commit()
     c.close()
 
@@ -851,6 +857,18 @@ def init_db():
         c.close()
     except sqlite3.OperationalError:
         pass  # column already exists
+
+    # Clean artifacts and duplicates from earlier browser scraping runs.
+    try:
+        c = db()
+        c.execute("DELETE FROM live_comments WHERE body IN ('Like','Reply','Comment','Popular','Threads','Down chevron icon','View all comments','Contact Uploading & Non-Users')")
+        c.execute("DELETE FROM live_comments WHERE username LIKE '#%' OR body LIKE 'duniameutyaVerified%'")
+        c.execute("DELETE FROM live_comments WHERE id NOT IN (SELECT MIN(id) FROM live_comments GROUP BY post_id, body)")
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_live_unique_body ON live_comments(post_id, body)")
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_assignment_one_owner ON assignments(comment_id)")
+        c.commit(); c.close()
+    except sqlite3.Error:
+        pass
 
 # ---------------------------------------------------------------------------
 # fetch Instagram thumbnails via og:image
@@ -1411,7 +1429,7 @@ class Handler(BaseHTTPRequestHandler):
                 rows = c.execute(
                     """SELECT cm.id FROM comments cm
                        WHERE cm.post_id = ?
-                         AND NOT EXISTS (SELECT 1 FROM assignments a WHERE a.comment_id = cm.id AND a.user_id = ?)
+                         AND NOT EXISTS (SELECT 1 FROM assignments a WHERE a.comment_id = cm.id)
                        ORDER BY RANDOM() LIMIT 1""",
                     (pid, u["id"]),
                 ).fetchall()
