@@ -1253,6 +1253,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         u = urlparse(self.path)
         path = u.path
+        # Debug: log incoming path
+        print(f"[GET] path={path}", flush=True)
         if path in ("/", "/index.html"):
             return self._send(200, HTML, "text/html; charset=utf-8")
         if path == "/admin":
@@ -1260,6 +1262,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/bumen-logo.png":
             return self._file(ROOT / "bumen-logo.png", "image/png")
         if path == "/health":
+            print("[GET] health endpoint hit", flush=True)
             return self._send(200, "OK", "text/plain")
         if path.startswith("/api/admin/"):
             return self._handle_admin_get(path)
