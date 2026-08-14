@@ -1473,6 +1473,15 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    import threading
     init_db()
-    print(f"BUMEN Reviewer ➜  http://127.0.0.1:{PORT}")
-    ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+    print(f"BUMEN Reviewer ���  http://127.0.0.1:{PORT}")
+    server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
+    # Warm-up: serve a quick request to ensure server is bound
+    def warmup():
+        import time, urllib.request
+        time.sleep(0.5)
+        try: urllib.request.urlopen(f"http://localhost:{PORT}/health", timeout=2)
+        except: pass
+    threading.Thread(target=warmup, daemon=True).start()
+    server.serve_forever()
