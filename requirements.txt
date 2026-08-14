@@ -1,1 +1,2 @@
-openpyxl
+# BUMEN Intelligence - no external dependencies, pure stdlib
+# This file exists to satisfy nixpacks
