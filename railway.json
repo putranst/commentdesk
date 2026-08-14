@@ -6,6 +6,8 @@
     "startCommand": "python3 app.py",
     "restartPolicyType": "ON_FAILURE",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 30
+    "healthcheckTimeout": 60,
+    "healthcheckInterval": 10,
+    "healthcheckStartDelay": 10
   }
 }
