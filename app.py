@@ -1506,9 +1506,21 @@ class Handler(BaseHTTPRequestHandler):
                 "Sec-Fetch-Dest": "image",
                 "Sec-Fetch-Mode": "no-cors",
                 "Sec-Fetch-Site": "cross-site",
-                "Origin": "https://www.instagram.com"
+                "Origin": "https://www.instagram.com",
+                "Sec-Ch-Ua": "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"",
+                "Sec-Ch-Ua-Mobile": "?1",
+                "Sec-Ch-Ua-Platform": "\"iOS\""
             })
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            # Add cookie handling for Instagram
+            import http.cookiejar
+            cookie_jar = http.cookiejar.CookieJar()
+            opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+            # First visit Instagram to set cookies
+            try:
+                opener.open("https://www.instagram.com/", timeout=5)
+            except:
+                pass
+            with opener.open(req, timeout=10) as resp:
                 data = resp.read()
                 ctype = resp.headers.get("Content-Type", "image/jpeg")
                 self.send_response(200)
