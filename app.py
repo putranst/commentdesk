@@ -661,6 +661,9 @@ a{color:inherit}
   font-size:12px;font-weight:600;padding:7px 14px;border-radius:99px;
   opacity:0;transition:opacity .2s;pointer-events:none;backdrop-filter:blur(4px)}
 .active-card .thumb:hover::before{opacity:1}
+.thumb-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:28px;color:#94a3b8}
+.thumb{background:#e6e8ee}
+.thumb:hover .thumb-placeholder{opacity:0.5}
 .active-card .thumb.locked::after{content:"";position:absolute;inset:0;background:rgba(15,23,42,.55);
   backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
   color:#fff;font-size:14px}
@@ -1063,7 +1066,7 @@ function renderActive(){
   const stateClass=a.state;
   el.innerHTML=`
     <div class="active-card">
-      <div class="thumb" style="${thumbStyle}" onclick="openPreview(${a.assignment_id})" title="Lihat post lengkap"></div>
+      <div class="thumb" style="${thumbStyle}" onclick="openPreview(${a.assignment_id})" title="Lihat post lengkap" onerror="this.onerror=null;this.style.background='#e6e8ee';this.innerHTML='<div class=thumb-placeholder>🖼️</div>'"></div>
       <div class="body">
         <div class="meta">
           <div class="post">${esc(a.post_title)}</div>
@@ -1096,7 +1099,7 @@ function renderQueue(){
   q.innerHTML=S.queue.map(a=>{
     const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
     return `<div class="q-card" onclick="onLockedCard()">
-      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}"></div>
+      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}" onerror="this.onerror=null;this.style.background='#e6e8ee';this.innerHTML='<div class=thumb-placeholder>🖼️</div>'"></div>
       <div class="info">
         <div class="t">${esc(a.post_title)}</div>
         <div class="s">Tugas berikutnya · selesaikan yang aktif dulu</div>
@@ -1112,7 +1115,7 @@ function renderDone(){
   el.innerHTML=S.done.map(a=>{
     const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
     return `<div class="done-card">
-      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}"></div>
+      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}" onerror="this.onerror=null;this.style.background='#e6e8ee';this.innerHTML='<div class=thumb-placeholder>🖼️</div>'"></div>
       <div class="info">
         <div class="t">${esc(a.post_title)}</div>
         <div class="s">✓ Sudah diverifikasi</div>
