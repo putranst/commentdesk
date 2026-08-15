@@ -1057,7 +1057,8 @@ function renderActive(){
   }
   $('empty-tugas').style.display='none';
   const a=S.active;
-  const thumbStyle=a.thumbnail_url?`background-image:url('${esc(a.thumbnail_url)}')`:'';
+  const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
+  const thumbStyle=thumbUrl?`background-image:url('${esc(thumbUrl)}')`:'';
   const stateLabel={claimed:'BELUM',copied:'TERSALIN',reported:'DILAPORKAN'}[a.state]||a.state;
   const stateClass=a.state;
   el.innerHTML=`
@@ -1092,29 +1093,33 @@ function renderQueue(){
   const q=$('queue'),title=$('queue-title');
   if(!S.queue.length){q.innerHTML='';title.style.display='none';return}
   title.style.display='block';
-  q.innerHTML=S.queue.map(a=>`
-    <div class="q-card" onclick="onLockedCard()">
-      <div class="thumb" style="${a.thumbnail_url?`background-image:url('${esc(a.thumbnail_url)}')`:''}"></div>
+  q.innerHTML=S.queue.map(a=>{
+    const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
+    return `<div class="q-card" onclick="onLockedCard()">
+      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}"></div>
       <div class="info">
         <div class="t">${esc(a.post_title)}</div>
         <div class="s">Tugas berikutnya · selesaikan yang aktif dulu</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderDone(){
   const el=$('done-list');
   if(!S.done.length){$('empty-selesai').style.display='block';el.innerHTML='';return}
   $('empty-selesai').style.display='none';
-  el.innerHTML=S.done.map(a=>`
-    <div class="done-card">
-      <div class="thumb" style="${a.thumbnail_url?`background-image:url('${esc(a.thumbnail_url)}')`:''}"></div>
+  el.innerHTML=S.done.map(a=>{
+    const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
+    return `<div class="done-card">
+      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}"></div>
       <div class="info">
         <div class="t">${esc(a.post_title)}</div>
         <div class="s">✓ Sudah diverifikasi</div>
         <div class="b">${esc(a.body)}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function onLockedCard(){
@@ -1264,6 +1269,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, ADMIN_HTML, "text/html; charset=utf-8")
         if path == "/bumen-logo.png":
             return self._file(ROOT / "bumen-logo.png", "image/png")
+        if path.startswith("/api/image-proxy/"):
+            return self._handle_image_proxy(path)
         if path.startswith("/api/admin/"):
             return self._handle_admin_get(path)
         if path == "/api/me":
@@ -1473,6 +1480,40 @@ class Handler(BaseHTTPRequestHandler):
             })
         c.close()
         return self._json(404, {"error": "Not found"})
+
+
+        return self._json(404, {"error": "Not found"})
+
+    def _handle_image_proxy(self, path):
+        """Proxy Instagram CDN images to avoid hotlink blocking."""
+        # path format: /api/image-proxy/<encoded_url>
+        import urllib.parse
+        encoded = path[len("/api/image-proxy/"):]
+        if not encoded:
+            return self._json(400, {"error": "Missing image URL"})
+        try:
+            url = urllib.parse.unquote(encoded)
+            if not url.startswith("http"):
+                return self._json(400, {"error": "Invalid URL"})
+            # Fetch with Instagram-friendly headers
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+                "Referer": "https://www.instagram.com/",
+                "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
+            })
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = resp.read()
+                ctype = resp.headers.get("Content-Type", "image/jpeg")
+                self.send_response(200)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(data)
+        except Exception as e:
+            print(f"Image proxy error: {e}", flush=True)
+            self.send_response(404)
+            self.end_headers()
 
 
 if __name__ == "__main__":

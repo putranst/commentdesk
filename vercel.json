@@ -1,3 +1,16 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/api/admin/:path*", "destination": "https://bumen-api-production.up.railway.app/api/admin/:path*" },
+    { "source": "/api/login", "destination": "https://bumen-api-production.up.railway.app/api/login" },
+    { "source": "/api/logout", "destination": "https://bumen-api-production.up.railway.app/api/logout" },
+    { "source": "/api/claim", "destination": "https://bumen-api-production.up.railway.app/api/claim" },
+    { "source": "/api/copy", "destination": "https://bumen-api-production.up.railway.app/api/copy" },
+    { "source": "/api/verify", "destination": "https://bumen-api-production.up.railway.app/api/verify" },
+    { "source": "/api/report", "destination": "https://bumen-api-production.up.railway.app/api/report" },
+    { "source": "/api/kanban", "destination": "https://bumen-api-production.up.railway.app/api/kanban" },
+    { "source": "/api/me", "destination": "https://bumen-api-production.up.railway.app/api/me" },
+    { "source": "/health", "destination": "https://bumen-api-production.up.railway.app/health" },
+    { "source": "/bumen-logo.png", "destination": "https://bumen-api-production.up.railway.app/bumen-logo.png" }
+  ]
 }

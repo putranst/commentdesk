@@ -1,67 +1,187 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Admin — BUMEN Fans Club</title>
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BUMEN Intelligence</title>
 <style>
-:root{--bg:#0f172a;--surface:#1e293b;--ink:#f1f5f9;--muted:#94a3b8;--brand:#818cf8;--brand2:#c084fc;--line:#334155;--radius:16px}
 *,*::before,*::after{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 system-ui,-apple-system,sans-serif;min-height:100vh}
-.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.auth-box{background:var(--surface);border-radius:var(--radius);padding:40px 32px;max-width:420px;width:100%;text-align:center;border:1px solid var(--line);box-shadow:0 4px 24px rgba(0,0,0,.3)}
-.auth-box .icon{font-size:48px;margin-bottom:8px}
-.auth-box h1{font-size:24px;margin:0 0 4px;font-weight:800}
-.auth-box .tag{color:var(--muted);font-size:13px;margin-bottom:24px}
-input{font:inherit;width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:12px;outline:none;margin-bottom:14px;font-size:14px;background:var(--bg);color:var(--ink)}
-input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(129,140,248,.15)}
-.btn{font:inherit;font-weight:700;cursor:pointer;border:none}
-.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:12px;font-size:15px}
-.btn-ghost{background:0;color:var(--muted);padding:8px 14px;font-size:13px;border-radius:8px}
-.btn-sm{padding:10px 22px;font-size:13px;border-radius:10px;width:auto}
-.err{color:#f87171;font-size:13px;margin-top:8px}.ok{color:#34d399;font-size:13px}
-.dash{display:none;padding:24px;max-width:1200px;margin:0 auto}.dash.active{display:block}
-.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
-.dash-header h1{font-size:22px;margin:0;font-weight:800}.dash-header .sub{color:var(--muted);font-size:13px}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px}
-.stat-card{background:var(--surface);border-radius:var(--radius);padding:22px 20px;border:1px solid var(--line)}
-.stat-card .val{font-size:32px;font-weight:800}.stat-card .lbl{font-size:12px;color:var(--muted);text-transform:uppercase}
-.stat-card .pct{font-size:13px;color:var(--brand);margin-top:4px}
-.section{margin-bottom:28px}.section h3{font-size:15px;font-weight:700;margin:0 0 14px}
-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
-th,td{padding:10px 14px;text-align:left;font-size:12px}
-th{background:var(--line);font-weight:700;text-transform:uppercase;font-size:10px;color:var(--muted)}
-td{border-top:1px solid var(--line)}
-.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
-.badge-ok{background:#065f4620;color:#34d399}.badge-new{background:#4338ca20;color:#818cf8}
-.prog-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:60px}
-.prog-fill{height:100%;background:var(--brand);border-radius:3px}
-.loading{padding:40px;text-align:center;color:var(--muted)}
-.add-post-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:28px}
-.add-post-row{display:flex;gap:10px}.add-post-row input{flex:1;margin-bottom:0}
-@media(min-width:700px){.stats{grid-template-columns:repeat(4,1fr)}}
+:root{--bg:#f5f6fa;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e6e8ee;--accent:#3b5bdb;--accent-2:#1f3a8a;--good:#16a34a;--warn:#f59e0b;--bad:#dc2626;--r:14px}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Rounded","Inter",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.auth-pg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.auth-box{background:#fff;border-radius:24px;padding:48px 40px;max-width:420px;width:100%;box-shadow:0 18px 40px rgba(15,23,42,.1),0 6px 12px rgba(15,23,42,.06);text-align:center}
+.auth-box img{width:80px;height:80px;margin:0 auto 16px;display:block}
+.auth-box h1{margin:0 0 4px;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.auth-box p.sub{margin:0 0 24px;color:var(--muted);font-size:13px}
+.auth-box input{width:100%;padding:13px 16px;border:1px solid var(--line);border-radius:12px;background:#f9fafc;font-size:15px;outline:none;transition:.15s;margin-top:6px}
+.auth-box input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(59,91,219,.12)}
+.auth-box .btn{margin-top:16px;width:100%;background:var(--ink);color:#fff;padding:13px;border-radius:12px;font-weight:600;font-size:15px}
+.auth-box .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:16px}
+
+.shell{max-width:1180px;margin:0 auto;padding:24px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 20px}
+.topbar-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+.topbar-brand img{width:38px;height:38px}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.topbar-actions button{padding:8px 14px;border-radius:10px;font-weight:600;font-size:13px;background:#fff;border:1px solid var(--line)}
+.topbar-actions button:hover{background:#f3f4f6}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.kpi .lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi .val{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:6px;color:var(--ink)}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.kpi.warn .val{color:var(--warn)}
+.kpi.bad .val{color:var(--bad)}
+.kpi.good .val{color:var(--good)}
+
+.section{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.section-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.section-head h2{margin:0;font-size:14px;font-weight:700;letter-spacing:-.02em;text-transform:uppercase;color:var(--ink)}
+.section-head .count{font-size:11px;font-weight:700;background:#eef0f4;color:var(--muted);padding:3px 9px;border-radius:99px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8f9fb;text-align:left;padding:10px 14px;font-weight:700;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid #f1f3f7;vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:#fafbfd}
+
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em}
+.badge.good{background:#dcfce7;color:#15803d}
+.badge.warn{background:#fef3c7;color:#a16207}
+.badge.bad{background:#fee2e2;color:#b91c1c}
+.badge.muted{background:#f1f3f7;color:var(--muted)}
+
+.report-row{background:#fff7ed;border-left:3px solid var(--warn);padding:12px 14px;margin:6px 14px;border-radius:8px}
+.report-row .meta{font-size:11px;color:var(--muted);margin-top:4px}
+.report-row .body{font-size:13px;margin-top:6px}
+
+.evt{font-size:12px;padding:8px 14px;border-bottom:1px solid #f1f3f7;display:flex;gap:10px;align-items:center}
+.evt .ts{color:var(--muted);font-size:11px;min-width:130px;font-family:monospace}
+.evt .tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;background:#eef0f4;color:var(--muted)}
+.evt .tag.d{background:#dcfce7;color:#15803d}
+.evt .tag.r{background:#fee2e2;color:#b91c1c}
+.evt .tag.p{background:#eef2ff;color:var(--accent)}
+
+.empty{padding:32px 18px;text-align:center;color:var(--muted);font-size:13px}
+.progress{height:6px;background:#eef0f4;border-radius:99px;overflow:hidden;width:80px}
+.progress .fill{height:100%;background:var(--accent);transition:.3s}
 </style></head><body>
-<div id="auth-v" class="auth-pg"><div class="auth-box">
-<div class="icon">🛡️</div><h1>Admin Panel</h1><p class="tag">BUMEN Fans Club</p>
-<input id="apwd" type="password" placeholder="Password admin" autocomplete="off">
-<button class="btn btn-primary" onclick="doAdminLogin()">Masuk</button><p id="auth-err" class="err"></p>
-</div></div>
-<div id="dash-v" class="dash">
-<div class="dash-header"><div><h1>📊 Dashboard</h1><span class="sub" id="dash-time"></span></div><button class="btn btn-ghost" onclick="doAdminLogout()">↩ Logout</button></div>
-<div class="add-post-box"><h3>➕ Tambah Post (URL)</h3><div class="add-post-row"><input id="post-url" placeholder="https://www.instagram.com/p/..."><button class="btn btn-primary btn-sm" onclick="addPost()">Tambah</button></div><p id="add-msg" style="margin-top:8px;font-size:13px"></p></div>
-<div class="stats" id="stats"></div>
-<div class="section"><h3>👥 User</h3><div id="utable"></div></div>
-<div class="section"><h3>📋 Post</h3><div id="ptable"></div></div>
-<div class="section"><h3>🕐 Aktivitas</h3><div id="feed"></div></div>
+
+<div id="admin-auth" class="auth-pg">
+  <div class="auth-box">
+    <img src="/bumen-logo.png" alt="BUMEN" onerror="this.style.display='none'">
+    <h1>BUMEN Intelligence</h1>
+    <p class="sub">Admin dashboard · Social media intelligence platform</p>
+    <input id="adm-user" placeholder="Username" autocomplete="off">
+    <input id="adm-pw" type="password" placeholder="Password" autocomplete="off">
+    <button class="btn" onclick="doAdminLogin()">LOGIN</button>
+    <div class="err" id="adm-err"></div>
+  </div>
 </div>
+
+<div id="admin-app" style="display:none">
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-brand"><img src="/bumen-logo.png" alt="">BUMEN · Admin</div>
+      <div class="topbar-actions"><b id="adm-handle"></b><button onclick="doAdminLogout()">LOGOUT</button></div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="section">
+      <div class="section-head"><h2>📌 Posts</h2><span class="count" id="cnt-posts">0</span></div>
+      <div style="overflow-x:auto"><table id="tbl-posts"><thead><tr><th>#</th><th>Title</th><th>Comments</th><th>Assigned</th><th>Done</th><th>Progress</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>👥 Reviewers</h2><span class="count" id="cnt-users">0</span></div>
+      <div style="overflow-x:auto"><table id="tbl-users"><thead><tr><th>Handle</th><th>Joined</th><th>Last seen</th><th>IP</th><th>Assignments</th><th>Done</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>⚠️ Reports inbox</h2><span class="count" id="cnt-reports">0</span></div>
+      <div id="list-reports"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>📋 Login events</h2><span class="count" id="cnt-logins">0</span></div>
+      <div id="list-logins"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>🔍 Assignment events</h2><span class="count" id="cnt-events">0</span></div>
+      <div id="list-events"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-const $=id=>document.getElementById(id);
-function fmtTime(ts){if(!ts)return"-";return new Date(ts+"Z").toLocaleString("id-ID",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
-async function api(p,o={}){const r=await fetch(p,{headers:{"Content-Type":"application/json"},...o});const d=await r.json();if(!r.ok)throw Error(d.error||"Failed");return d}
-async function loadDash(){try{const d=await api("/api/admin/dashboard");renderStats(d);renderUsers(d.users);renderPosts(d.posts);renderFeed(d.feed)}catch(e){$("dash-v").innerHTML='<div class="loading">Error: '+e.message+'</div>'}}
-function renderStats(d){const t=d.users.length,a=d.users.reduce((s,u)=>s+u.assigned,0),c=d.users.reduce((s,u)=>s+u.copied,0),p=d.posts.filter(p=>p.users_assigned>=t).length;$("stats").innerHTML='<div class="stat-card"><div class="val">'+t+'</div><div class="lbl">Reviewer</div></div><div class="stat-card"><div class="val">'+a+'</div><div class="lbl">Assigned</div><div class="pct">'+c+' copied</div></div><div class="stat-card"><div class="val">'+c+'</div><div class="lbl">Copied</div><div class="pct">'+(t?(c/(a||1)*100).toFixed(0):0)+'%</div></div><div class="stat-card"><div class="val">'+p+'/'+d.posts.length+'</div><div class="lbl">Tuntas</div></div>'}
-function renderUsers(u){if(!u.length){$("utable").innerHTML='<div class="loading">-</div>';return}$("utable").innerHTML='<table><tr><th>Handle</th><th>Join</th><th>Assigned</th><th>Copied</th><th>%</th></tr>'+u.map(u=>'<tr><td><b>'+esc(u.handle)+'</b></td><td>'+fmtTime(u.created_at)+'</td><td>'+u.assigned+'</td><td>'+u.copied+'</td><td><div class="prog-bar"><div class="prog-fill" style="width:'+(u.assigned?(u.copied/u.assigned*100):0)+'%"></div></div></td></tr>').join("")+'</table>'}
-function renderPosts(p){if(!p.length){$("ptable").innerHTML='<div class="loading">-</div>';return}$("ptable").innerHTML='<table><tr><th>Post</th><th>Komen</th><th>Users</th><th>Copy</th><th>%</th></tr>'+p.map(p=>'<tr><td><b>'+esc(p.title)+'</b></td><td>'+p.comment_count+'</td><td>'+p.users_assigned+'</td><td>'+p.users_copied+'</td><td><div class="prog-bar"><div class="prog-fill" style="width:'+(p.users_assigned?(p.users_copied/p.users_assigned*100):0)+'%"></div></div></td></tr>').join("")+'</table>'}
-function renderFeed(f){if(!f.length){$("feed").innerHTML='<div class="loading">-</div>';return}$("feed").innerHTML='<table><tr><th>Waktu</th><th>User</th><th>Post</th><th>Aksi</th></tr>'+f.map(f=>'<tr><td>'+fmtTime(f.ts)+'</td><td>'+esc(f.handle)+'</td><td>'+esc(f.post_title)+'</td><td><span class="badge badge-'+(f.action==='copied'?'ok':'new')+'">'+(f.action==='copied'?'✓ Copy':'📋 Assign')+'</span></td></tr>').join("")+'</table>'}
-async function addPost(){const u=$("post-url").value.trim(),m=$("add-msg");if(!u)return m.innerHTML='<span class="err">URL required</span>';m.innerHTML='<span class="ok">Adding...</span>';try{const d=await api("/api/admin/add-post",{method:"POST",body:JSON.stringify({url:u})});m.innerHTML='<span class="ok">✅ '+esc(d.post.title)+' — '+d.comments_generated+' comments</span>';$("post-url").value='';loadDash()}catch(e){m.innerHTML='<span class="err">❌ '+e.message+'</span>'}}
-async function doAdminLogin(){const p=$("apwd").value.trim();if(!p)return $("auth-err").textContent="Password required";try{await api("/api/admin/login",{method:"POST",body:JSON.stringify({password:p})});$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent=new Date().toLocaleString("id-ID");loadDash()}catch(e){$("auth-err").textContent=e.message}}
-async function boot(){try{await api("/api/admin/me");$("auth-v").style.display="none";$("dash-v").classList.add("active");$("dash-time").textContent=new Date().toLocaleString("id-ID");loadDash()}catch(_){}}
-async function doAdminLogout(){try{await api("/api/admin/logout",{method:"POST"});location.reload()}catch(_){location.reload()}}
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+async function api(p,o={}){const r=await fetch(p,{...o,headers:{'Content-Type':'application/json',...(o.headers||{})}});const d=await r.json();if(!r.ok)throw new Error(d.error||'Request gagal');return d}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function relTime(ts){if(!ts)return'—';try{const d=new Date(ts.replace(' ','T'));const s=(Date.now()-d)/1000;if(s<60)return Math.floor(s)+'s';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d'}catch(e){return ts}}
+
+async function boot(){
+  try{
+    const m=await api('/api/admin/me');
+    $('admin-auth').style.display='none';
+    $('admin-app').style.display='block'.replace('block','')+'block';
+    $('admin-app').style.display='block';
+    $('adm-handle').textContent=m.admin.username;
+    await refresh();
+  }catch(_){$('admin-auth').style.display='flex'}
+}
+
+async function doAdminLogin(){
+  const u=$('adm-user').value.trim(); const p=$('adm-pw').value;
+  if(!u||!p){$('adm-err').textContent='Isi username & password';return}
+  try{
+    await api('/api/admin/login',{method:'POST',body:JSON.stringify({username:u,password:p})});
+    location.reload();
+  }catch(e){$('adm-err').textContent=e.message}
+}
+async function doAdminLogout(){await api('/api/admin/logout',{method:'POST'});location.reload()}
+
+async function refresh(){
+  const d=await api('/api/admin/dashboard');
+  const s=d.summary;
+  $('kpis').innerHTML=`
+    <div class="kpi"><div class="lbl">Users</div><div class="val">${s.users_total}</div><div class="sub">${s.reviewers_active_24h} active 24h</div></div>
+    <div class="kpi"><div class="lbl">Posts</div><div class="val">${s.posts_total}</div><div class="sub">${s.comments_total} total comments</div></div>
+    <div class="kpi good"><div class="lbl">Done</div><div class="val">${s.assignments_done}</div><div class="sub">${Math.round(s.assignments_done/(s.assignments_total||1)*100)}% complete</div></div>
+    <div class="kpi warn"><div class="lbl">In progress</div><div class="val">${s.assignments_in_progress}</div></div>
+    <div class="kpi ${s.open_reports?'bad':''}"><div class="lbl">Open reports</div><div class="val">${s.open_reports}</div></div>
+    <div class="kpi"><div class="lbl">Available comments</div><div class="val">${s.comments_available}</div></div>`;
+  // Posts
+  $('cnt-posts').textContent=d.posts.length;
+  $('tbl-posts').querySelector('tbody').innerHTML=d.posts.map(p=>{
+    const pct=p.comment_count?(p.done || 0)/p.comment_count*100:0;
+    return `<tr><td>${p.id}</td><td><b>${esc(p.title)}</b></td><td>${p.comment_count}</td><td>${p.assigned||0}</td><td>${p.done||0}</td><td><div class="progress"><div class="fill" style="width:${pct}%"></div></div> ${Math.round(pct)}%</td></tr>`;
+  }).join('')||'<tr><td colspan="6" class="empty">No posts yet</td></tr>';
+  // Users
+  $('cnt-users').textContent=d.users.length;
+  $('tbl-users').querySelector('tbody').innerHTML=d.users.map(u=>{
+    return `<tr><td><b>@${esc(u.handle)}</b></td><td>${(u.created_at||'').substring(0,16)}</td><td>${relTime(u.last_seen_at)}</td><td><span class="badge muted">${esc(u.last_ip||'—')}</span></td><td>${u.assignments||0}</td><td>${u.done||0}</td></tr>`;
+  }).join('')||'<tr><td colspan="6" class="empty">No reviewers yet</td></tr>';
+  // Reports
+  $('cnt-reports').textContent=d.reports.filter(r=>!r.resolved).length;
+  $('list-reports').innerHTML=d.reports.length?d.reports.map(r=>`
+    <div class="report-row">
+      <div><b>@${esc(r.handle)}</b> reported: <span class="badge ${r.resolved?'good':'warn'}">${r.resolved?'Resolved':'Open'}</span> · attempt #${r.attempt_count}</div>
+      <div class="body">${esc(r.body||'').substring(0,140)}${(r.body||'').length>140?'…':''}</div>
+      <div class="meta">📌 ${esc(r.title)} · 🕐 ${(r.created_at||'').substring(0,19)} · "${esc(r.note||'')}"</div>
+    </div>`).join(''):'<div class="empty">No reports. Clean run.</div>';
+  // Login events
+  $('cnt-logins').textContent=d.login_events.length;
+  $('list-logins').innerHTML=d.login_events.length?d.login_events.map(l=>`
+    <div class="evt"><span class="ts">${(l.at||'').substring(0,19)}</span><span class="tag">login</span><b>@${esc(l.handle)}</b> · <span style="color:var(--muted)">${esc(l.ip||'')}</span></div>`).join(''):'<div class="empty">No logins yet</div>';
+  // Assignment events
+  $('cnt-events').textContent=d.assignment_events.length;
+  $('list-events').innerHTML=d.assignment_events.length?d.assignment_events.map(e=>{
+    const cls=e.event.includes('reject')?'r':e.event.includes('done')?'d':'p';
+    return `<div class="evt"><span class="ts">${(e.at||'').substring(0,19)}</span><span class="tag ${cls}">${esc(e.event)}</span><b>@${esc(e.handle||'system')}</b> · <span style="color:var(--muted)">${esc(e.detail||'')}</span></div>`;
+  }).join(''):'<div class="empty">No events yet</div>';
+}
+
+window.doAdminLogin=doAdminLogin; window.doAdminLogout=doAdminLogout;
 boot();
-</script></body></html>
+</script>
+</body></html>
