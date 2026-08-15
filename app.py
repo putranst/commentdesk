@@ -1499,7 +1499,14 @@ class Handler(BaseHTTPRequestHandler):
             req = urllib.request.Request(url, headers={
                 "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
                 "Referer": "https://www.instagram.com/",
-                "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
+                "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "Sec-Fetch-Dest": "image",
+                "Sec-Fetch-Mode": "no-cors",
+                "Sec-Fetch-Site": "cross-site",
+                "Origin": "https://www.instagram.com"
             })
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = resp.read()
