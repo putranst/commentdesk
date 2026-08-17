@@ -17,8 +17,8 @@ COPY app.py .
 COPY bumen-logo.png .
 COPY admin.html .
 
-# Copy local database with fresh thumbnails
-COPY bumen.db /data/bumen.db
+# Copy local database with fresh thumbnails to app dir (not volume)
+COPY bumen.db /app/bumen.db
 
 # Create database directory
 RUN mkdir -p /data
@@ -28,4 +28,4 @@ EXPOSE 8080
 
 # Run with database in persistent volume
 ENV DB_PATH=/data/bumen.db
-CMD ["python3", "app.py"]
+CMD ["sh", "-c", "if [ ! -f /data/bumen.db ]; then cp /app/bumen.db /data/bumen.db; fi && python3 app.py"]
