@@ -1388,6 +1388,26 @@ class Handler(BaseHTTPRequestHandler):
                 threading.Thread(target=do_refresh, daemon=True).start()
                 return self._json(200, {"status": "started", "message": "Thumbnail refresh initiated"})
 
+            # Admin bulk thumbnail update (for manual sync from local)
+            if path == "/api/admin/update-thumbnails":
+                sid = self._get_admin_sid()
+                admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                d = self._read_json()
+                updates = d.get("updates", {})
+                if not updates:
+                    return self._json(400, {"error": "updates dict required"})
+                c = db()
+                updated = 0
+                for post_id, thumb_url in updates.items():
+                    c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (thumb_url, int(post_id)))
+                    if c.rowcount > 0:
+                        updated += 1
+                c.commit()
+                c.close()
+                return self._json(200, {"updated": updated})
+
             # Admin live-comments ingestion (password auth for scraper)
             if path == "/api/admin/live-comments":
                 d = self._read_json()
