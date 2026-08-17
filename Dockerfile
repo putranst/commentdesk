@@ -16,9 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY bumen-logo.png .
 COPY admin.html .
-
-# Copy local database with fresh thumbnails to app dir (not volume)
-COPY bumen.db /app/bumen.db
+COPY data.json .
+COPY bumen.db .
 
 # Create database directory
 RUN mkdir -p /data
