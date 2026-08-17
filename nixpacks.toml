@@ -2,7 +2,10 @@
 nixPkgs = ["python311", "python311Packages.pip"]
 
 [phases.install]
-cmds = ["pip install -r requirements.txt 2>/dev/null || echo 'no requirements.txt'"]
+cmds = [
+  "pip install --upgrade pip",
+  "pip install instaloader>=4.15.3"
+]
 
 [phases.build]
 cmds = []
