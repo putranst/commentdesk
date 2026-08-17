@@ -25,4 +25,5 @@ EXPOSE 8080
 
 # Run with database in persistent volume
 ENV DB_PATH=/data/bumen.db
+# Force rebuild: 2026-08-18
 CMD ["python3", "app.py"]
