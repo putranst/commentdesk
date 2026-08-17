@@ -1401,11 +1401,11 @@ class Handler(BaseHTTPRequestHandler):
                     username = cm.get("username", "anonymous")
                     if not body: continue
                     try:
-                        c.execute("""
+                        cur = c.execute("""
                             INSERT OR IGNORE INTO live_comments (post_id, username, body, scraped_at)
                             VALUES (?, ?, ?, CURRENT_TIMESTAMP)
                         """, (post_id, username, body))
-                        if c.rowcount > 0:
+                        if cur.rowcount > 0:
                             saved += 1
                     except sqlite3.IntegrityError:
                         pass
