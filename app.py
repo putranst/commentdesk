@@ -142,7 +142,9 @@ def init_db():
     if DATA_JSON.exists():
         c = db()
         n_posts = c.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
+        print(f"[DEBUG] data.json exists, posts in DB: {n_posts}", flush=True)
         if n_posts == 0:
+            print("[DEBUG] Loading posts from data.json...", flush=True)
             for p in json.loads(DATA_JSON.read_text()):
                 c.execute(
                     "INSERT OR IGNORE INTO posts(id, source_url, title, thumbnail_url, description) VALUES(?,?,?,?,?)",
@@ -154,6 +156,8 @@ def init_db():
                         (p["id"], cmt),
                     )
         c.commit(); c.close()
+    else:
+        print(f"[DEBUG] data.json NOT found at {DATA_JSON}", flush=True)
 
     # Seed default admin if not exists
     seed_default_admin()
