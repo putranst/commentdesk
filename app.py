@@ -150,6 +150,43 @@ def init_db():
     # Seed default admin if not exists
     seed_default_admin()
 
+# Refresh Instagram thumbnails using instaloader
+def refresh_instagram_thumbnails():
+    """Fetch fresh thumbnail URLs from Instagram for all posts and update database."""
+    try:
+        import instaloader
+        L = instaloader.Instaloader()
+        
+        # Map of post_id to shortcode (extracted from source_url)
+        c = db()
+        rows = c.execute("SELECT id, source_url FROM posts").fetchall()
+        c.close()
+        
+        for post_id, source_url in rows:
+            try:
+                # Extract shortcode from Instagram URL
+                import re
+                match = re.search(r'instagram\.com/p/([A-Za-z0-9_-]+)/?', source_url)
+                if not match:
+                    continue
+                shortcode = match.group(1)
+                
+                post = instaloader.Post.from_shortcode(L.context, shortcode)
+                fresh_url = post.url
+                
+                c = db()
+                c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (fresh_url, post_id))
+                c.commit()
+                c.close()
+                print(f"✅ Refreshed thumbnail for post {post_id} ({shortcode})")
+            except Exception as e:
+                print(f"⚠️ Failed to refresh thumbnail for post {post_id}: {e}")
+                continue
+    except ImportError:
+        print("⚠️ instaloader not available, skipping thumbnail refresh")
+    except Exception as e:
+        print(f"⚠️ Thumbnail refresh error: {e}")
+
 def hash_pw(s): return hashlib.sha256(s.encode()).hexdigest()
 
 ADMIN_PW_DEFAULT = "@poji#1"
@@ -1541,7 +1578,8 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     import threading
     init_db()
-    print(f"BUMEN Reviewer ���  http://127.0.0.1:{PORT}")
+    refresh_instagram_thumbnails()
+    print(f"BUMEN Reviewer —  http://127.0.0.1:{PORT}")
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     # Warm-up: serve a quick request to ensure server is bound
     def warmup():

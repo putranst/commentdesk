@@ -1,2 +1,2 @@
-# BUMEN Intelligence - no external dependencies, pure stdlib
-# This file exists to satisfy nixpacks
+# BUMEN Intelligence - dependencies
+instaloader>=4.15.3
