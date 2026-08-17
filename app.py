@@ -11,7 +11,7 @@ import sqlite3, json, secrets, os, re, hashlib, time
 from http import cookies
 
 ROOT = Path(__file__).resolve().parent
-DB   = ROOT / "bumen.db"
+DB   = Path(os.environ.get("DB_PATH", str(ROOT / "bumen.db")))
 PORT = int(os.environ.get("PORT", "8765"))
 SESSIONS = {}
 DATA_JSON = ROOT / "data.json"
