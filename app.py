@@ -1367,6 +1367,47 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"ok": True}).encode())
                 return
 
+            # Admin live-comments ingestion (password auth for scraper)
+            if path == "/api/admin/live-comments":
+                d = self._read_json()
+                # Allow auth via password in body OR admin session cookie
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                post_id = int(d.get("post_id", 0))
+                comments = d.get("comments", [])
+                thumbnail = d.get("thumbnail", None)
+                
+                if not post_id or not comments:
+                    return self._json(400, {"error": "post_id and comments required"})
+                
+                c = db()
+                saved = 0
+                for cm in comments:
+                    body = cm.get("body", "").strip()
+                    username = cm.get("username", "anonymous")
+                    if not body: continue
+                    try:
+                        c.execute("""
+                            INSERT OR IGNORE INTO live_comments (post_id, username, body, scraped_at)
+                            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                        """, (post_id, username, body))
+                        if c.rowcount > 0:
+                            saved += 1
+                    except sqlite3.IntegrityError:
+                        pass
+                
+                if thumbnail:
+                    c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (thumbnail, post_id))
+                
+                c.commit(); c.close()
+                return self._json(200, {"saved": saved})
+
             user = SESSIONS.get(self._get_sid() or "")
             if not user: return self._json(401, {"error": "Belum login"})
 
