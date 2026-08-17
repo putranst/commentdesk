@@ -1401,8 +1401,8 @@ class Handler(BaseHTTPRequestHandler):
                 c = db()
                 updated = 0
                 for post_id, thumb_url in updates.items():
-                    c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (thumb_url, int(post_id)))
-                    if c.rowcount > 0:
+                    cur = c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (thumb_url, int(post_id)))
+                    if cur.rowcount > 0:
                         updated += 1
                 c.commit()
                 c.close()
