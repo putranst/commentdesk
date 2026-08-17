@@ -90,6 +90,14 @@ def init_db():
         detail TEXT DEFAULT '',
         at TEXT DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS live_comments(
+        id INTEGER PRIMARY KEY,
+        post_id INTEGER NOT NULL REFERENCES posts(id),
+        username TEXT NOT NULL DEFAULT 'anonymous',
+        body TEXT NOT NULL,
+        scraped_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(post_id, body)
+    );
     CREATE TABLE IF NOT EXISTS admin_users(
         id INTEGER PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
