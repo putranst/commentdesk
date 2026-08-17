@@ -1375,6 +1375,19 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"ok": True}).encode())
                 return
 
+            # Admin thumbnail refresh endpoint
+            if path == "/api/admin/refresh-thumbnails":
+                sid = self._get_admin_sid()
+                admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                # Run refresh in background
+                import threading
+                def do_refresh():
+                    refresh_instagram_thumbnails()
+                threading.Thread(target=do_refresh, daemon=True).start()
+                return self._json(200, {"status": "started", "message": "Thumbnail refresh initiated"})
+
             # Admin live-comments ingestion (password auth for scraper)
             if path == "/api/admin/live-comments":
                 d = self._read_json()
