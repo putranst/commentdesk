@@ -1,4 +1,4 @@
-# BUMEN Intelligence - Docker-based deployment
+# BUMEN Intelligence - Docker-based deployment v20260818
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -25,6 +25,6 @@ RUN mkdir -p /data
 # Expose port
 EXPOSE 8080
 
-# Run with database in persistent volume - FORCE REBUILD
+# Run with database in persistent volume - FORCE REBUILD 20260818
 ENV DB_PATH=/data/bumen.db
-CMD ["sh", "-c", "echo 'Starting...' && ls -la /data/ && if [ ! -f /data/bumen.db ]; then echo 'Copying DB...' && cp /app/bumen.db /data/bumen.db && echo 'DB copied'; else echo 'DB exists'; fi && python3 app.py"]
+CMD ["sh", "-c", "echo '=== STARTUP ===' && ls -la /data/ && if [ ! -f /data/bumen.db ]; then echo 'Copying DB...' && cp /app/bumen.db /data/bumen.db && echo 'DB copied'; ls -la /data/bumen.db; else echo 'DB exists'; fi && python3 app.py"]
