@@ -156,6 +156,26 @@ def init_db():
                         (p["id"], cmt),
                     )
         c.commit(); c.close()
+
+    # Auto-seed live_comments from data.json so verify_done has a corpus to match against
+    # even before the IG scraper has scraped the post. Marked with username='__bumen_seed__'
+    # so admin can distinguish from real scraped comments.
+    if DATA_JSON.exists():
+        c = db()
+        n_live = c.execute("SELECT COUNT(*) FROM live_comments").fetchone()[0]
+        n_comments = c.execute("SELECT COUNT(*) FROM comments").fetchone()[0]
+        if n_live == 0 and n_comments > 0:
+            print("[DEBUG] Seeding live_comments from data.json (no scrape data yet)...", flush=True)
+            for p in json.loads(DATA_JSON.read_text()):
+                for cmt in p.get("comments", []):
+                    c.execute(
+                        "INSERT OR IGNORE INTO live_comments(post_id, username, body, scraped_at) VALUES(?, '__bumen_seed__', ?, CURRENT_TIMESTAMP)",
+                        (p["id"], cmt),
+                    )
+            c.commit()
+            seeded = c.execute("SELECT COUNT(*) FROM live_comments WHERE username='__bumen_seed__'").fetchone()[0]
+            print(f"[DEBUG] Seeded {seeded} live_comments as pending canonical bodies", flush=True)
+        c.close()
     else:
         print(f"[DEBUG] data.json NOT found at {DATA_JSON}", flush=True)
 
@@ -396,8 +416,42 @@ def report_unconfirmed(user_id, assignment_id, note):
     c.execute("UPDATE assignments SET state='reported' WHERE id=?", (assignment_id,))
     c.commit(); c.close()
 
+def _normalize_for_match(s):
+    """Normalize text for fuzzy match: lowercase, collapse whitespace, strip emojis+punctuation variants."""
+    import re as _re
+    if not s: return ""
+    t = s.lower()
+    # Unify ellipsis and dashes
+    t = t.replace("…", "...").replace("—", "-").replace("–", "-")
+    # Strip zero-width and BOM
+    t = t.replace("\u200b", "").replace("\ufeff", "")
+    # Remove all emoji and non-ASCII punctuation (keep word chars + spaces + basic punct)
+    t = _re.sub(r"[^\w\s\.\,\!\?\']", " ", t, flags=_re.UNICODE)
+    # Collapse whitespace
+    t = _re.sub(r"\s+", " ", t).strip()
+    return t
+
+def _bigram_set(s):
+    """Return set of character bigrams for Jaccard similarity."""
+    s = s.replace(" ", "")  # bigrams ignore spaces
+    if len(s) < 2: return {s} if s else set()
+    return {s[i:i+2] for i in range(len(s)-1)}
+
+def _jaccard(a, b):
+    """Jaccard similarity over bigrams."""
+    A, B = _bigram_set(a), _bigram_set(b)
+    if not A or not B: return 0.0
+    return len(A & B) / len(A | B)
+
 def verify_done(user_id, assignment_id, claimed_seen):
-    """Mark verified done. Backend cross-checks that the comment is live on IG."""
+    """Mark verified done. Cross-checks live_comments for this post with fuzzy match.
+
+    Match rules (in priority order):
+      1. Exact body match (whitespace/case insensitive) → 1.0
+      2. Normalized match (strip emoji/punct variants) → 0.95
+      3. Bigram-Jaccard >= 0.80 → acceptable (0.80..0.94)
+      4. Anything else → reject with helpful message
+    """
     c = db()
     row = c.execute("""
         SELECT a.id, a.comment_id, cm.body, cm.post_id
@@ -407,13 +461,35 @@ def verify_done(user_id, assignment_id, claimed_seen):
     if not row:
         c.close(); raise ValueError("Selesaikan copy dulu")
 
-    # Backend cross-check: comment body must appear in live_comments for this post
-    match = c.execute("""
-        SELECT id, body FROM live_comments
-        WHERE post_id = ? AND LOWER(TRIM(body)) = LOWER(TRIM(?))
-        LIMIT 1
-    """, (row["post_id"], row["body"])).fetchone()
-    if not match:
+    target_body = row["body"]
+    target_norm = _normalize_for_match(target_body)
+
+    # Pull all live_comments for this post, score against the target body
+    candidates = c.execute("""
+        SELECT id, body FROM live_comments WHERE post_id = ?
+    """, (row["post_id"],)).fetchall()
+
+    best = None  # (score, match_id, method)
+    target_bigrams = _bigram_set(target_norm)
+    for cand in candidates:
+        cand_body = cand["body"]
+        # Tier 1: exact (case+whitespace insensitive)
+        if cand_body.lower().strip() == target_body.lower().strip():
+            best = (1.0, cand["id"], "exact")
+            break
+        cand_norm = _normalize_for_match(cand_body)
+        # Tier 2: normalized equal
+        if cand_norm == target_norm:
+            score = 0.95
+            if not best or score > best[0]:
+                best = (score, cand["id"], "normalized")
+            continue
+        # Tier 3: bigram Jaccard
+        j = _jaccard(target_norm, cand_norm)
+        if j >= 0.80 and (not best or j > best[0]):
+            best = (j, cand["id"], "fuzzy")
+
+    if not best:
         # Log rejection to admin dashboard
         c.execute("""
             INSERT INTO reports(user_id, comment_id, note)
@@ -421,20 +497,24 @@ def verify_done(user_id, assignment_id, claimed_seen):
         """, (user_id, row["comment_id"], "Auto-reject: comment not found live on IG post"))
         c.commit(); c.close()
         log_event(user_id, assignment_id, "verify_rejected", "not live")
-        raise ValueError("Komentar belum terdeteksi live di IG. Coba paste manual, tunggu 30 detik, lalu konfirmasi lagi.")
+        raise ValueError(
+            "Komentar belum terdeteksi live di IG. "
+            "Pastikan sudah benar-benar terkirim di kolom komentar post yang ditugaskan, "
+            "tunggu 30 detik, lalu coba konfirmasi lagi. "
+            "Kalau masih gagal, gunakan tombol Lapor Admin."
+        )
 
-    # Match found — exact body present in live_comments
-    match_score = 1.0  # exact match
+    match_score, match_id, method = best
     c.execute("""
         UPDATE assignments SET state='done', verified_at=CURRENT_TIMESTAMP,
-            verify_method='ig_crosscheck', verify_match_score=?
+            verify_method=?, verify_match_score=?
         WHERE id=?
-    """, (match_score, assignment_id))
+    """, (f"ig_{method}", match_score, assignment_id))
     c.execute("UPDATE comments SET status='done' WHERE id=?", (row["comment_id"],))
     c.execute("UPDATE reports SET resolved=1 WHERE comment_id=? AND resolved=0", (row["comment_id"],))
     c.commit(); c.close()
-    log_event(user_id, assignment_id, "verify_done", f"match_id={match['id']} score={match_score}")
-    return {"verified": True, "method": "ig_crosscheck", "match_score": match_score}
+    log_event(user_id, assignment_id, "verify_done", f"match_id={match_id} method={method} score={match_score:.2f}")
+    return {"verified": True, "method": f"ig_{method}", "match_score": round(match_score, 2)}
 
 # ---------------------------------------------------------------------------
 # HTML — typeui.sh sleek kanban (TUGAS / SELESAI)
