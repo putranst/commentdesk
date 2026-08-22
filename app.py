@@ -160,21 +160,26 @@ def init_db():
     # Auto-seed live_comments from data.json so verify_done has a corpus to match against
     # even before the IG scraper has scraped the post. Marked with username='__bumen_seed__'
     # so admin can distinguish from real scraped comments.
+    # Upserts on each startup to handle: (a) first deploy (empty), (b) Railway volume with old rows.
     if DATA_JSON.exists():
         c = db()
-        n_live = c.execute("SELECT COUNT(*) FROM live_comments").fetchone()[0]
         n_comments = c.execute("SELECT COUNT(*) FROM comments").fetchone()[0]
-        if n_live == 0 and n_comments > 0:
-            print("[DEBUG] Seeding live_comments from data.json (no scrape data yet)...", flush=True)
+        if n_comments > 0:
+            print("[DEBUG] Upserting live_comments from data.json...", flush=True)
+            seeded = 0
             for p in json.loads(DATA_JSON.read_text()):
                 for cmt in p.get("comments", []):
-                    c.execute(
-                        "INSERT OR IGNORE INTO live_comments(post_id, username, body, scraped_at) VALUES(?, '__bumen_seed__', ?, CURRENT_TIMESTAMP)",
-                        (p["id"], cmt),
-                    )
+                    c.execute("""
+                        INSERT INTO live_comments(post_id, username, body, scraped_at)
+                        VALUES(?, '__bumen_seed__', ?, CURRENT_TIMESTAMP)
+                        ON CONFLICT(post_id, body) DO UPDATE SET
+                            username=excluded.username,
+                            scraped_at=excluded.scraped_at
+                    """, (p["id"], cmt))
+                    seeded += 1
             c.commit()
-            seeded = c.execute("SELECT COUNT(*) FROM live_comments WHERE username='__bumen_seed__'").fetchone()[0]
-            print(f"[DEBUG] Seeded {seeded} live_comments as pending canonical bodies", flush=True)
+            total_seeded = c.execute("SELECT COUNT(*) FROM live_comments WHERE username='__bumen_seed__'").fetchone()[0]
+            print(f"[DEBUG] Upserted {seeded} live_comments (total seeded={total_seeded})", flush=True)
         c.close()
     else:
         print(f"[DEBUG] data.json NOT found at {DATA_JSON}", flush=True)
