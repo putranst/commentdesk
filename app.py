@@ -136,6 +136,13 @@ def init_db():
         try: c.execute(sql); c.commit()
         except sqlite3.OperationalError: pass
 
+    # Ensure unique index for live_comments upsert (post_id, body)
+    try:
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_live_comments_post_body ON live_comments(post_id, body)")
+        c.commit()
+    except sqlite3.OperationalError as e:
+        print(f"[DEBUG] Could not create unique index on live_comments: {e}", flush=True)
+
     c.close()
 
     # Load posts + comments from data.json if empty — idempotent INSERT OR IGNORE
