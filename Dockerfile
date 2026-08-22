@@ -25,6 +25,6 @@ RUN mkdir -p /data
 # Expose port
 EXPOSE 8080
 
-# Run with database in persistent volume - FORCE REBUILD 20260818-3
+# Run with database in persistent volume - FORCE REBUILD 20260821-1
 ENV DB_PATH=/data/bumen.db
-ENTRYPOINT ["sh", "-c", "echo '=== STARTUP v3 ===' && echo 'DB_PATH=' $DB_PATH && ls -la /data/ && if [ ! -f /data/bumen.db ]; then echo 'Copying DB...' && cp /app/bumen.db /data/bumen.db && echo 'DB copied' && ls -la /data/bumen.db; else echo 'DB exists'; fi && echo 'Starting Python...' && python3 app.py"]
+ENTRYPOINT ["sh", "-c", "echo '=== STARTUP v4 ===' && echo 'DB_PATH=' $DB_PATH && ls -la /data/ && if [ ! -f /data/bumen.db ]; then echo 'Copying DB...' && cp /app/bumen.db /data/bumen.db && echo 'DB copied' && ls -la /data/bumen.db; else echo 'DB exists'; fi && echo 'Starting Python...' && python3 app.py"]
