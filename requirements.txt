@@ -1,2 +1,2 @@
 # BUMEN Intelligence - dependencies
-instaloader>=4.15.3
+instaloader>=4.15.3# force rebuild Sun Aug 23 06:46:00 WIB 2026
