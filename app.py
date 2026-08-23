@@ -145,23 +145,22 @@ def init_db():
 
     c.close()
 
-    # Load posts + comments from data.json if empty — idempotent INSERT OR IGNORE
+    # Load posts + comments from data.json — always upsert (INSERT OR IGNORE)
     if DATA_JSON.exists():
         c = db()
         n_posts = c.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
         print(f"[DEBUG] data.json exists, posts in DB: {n_posts}", flush=True)
-        if n_posts == 0:
-            print("[DEBUG] Loading posts from data.json...", flush=True)
-            for p in json.loads(DATA_JSON.read_text()):
+        # Always upsert posts + comments so new posts in data.json get added on deploy
+        for p in json.loads(DATA_JSON.read_text()):
+            c.execute(
+                "INSERT OR IGNORE INTO posts(id, source_url, title, thumbnail_url, description) VALUES(?,?,?,?,?)",
+                (p["id"], p.get("source_url", ""), p.get("title", ""), p.get("thumb", ""), p.get("description", "")),
+            )
+            for cmt in p.get("comments", []):
                 c.execute(
-                    "INSERT OR IGNORE INTO posts(id, source_url, title, thumbnail_url, description) VALUES(?,?,?,?,?)",
-                    (p["id"], p.get("source_url", ""), p.get("title", ""), p.get("thumb", ""), p.get("description", "")),
+                    "INSERT OR IGNORE INTO comments(post_id, body, status) VALUES(?,?,'available')",
+                    (p["id"], cmt),
                 )
-                for cmt in p.get("comments", []):
-                    c.execute(
-                        "INSERT OR IGNORE INTO comments(post_id, body, status) VALUES(?,?,'available')",
-                        (p["id"], cmt),
-                    )
         c.commit(); c.close()
 
     # Auto-seed live_comments from data.json so verify_done has a corpus to match against
