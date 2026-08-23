@@ -1507,8 +1507,14 @@ class Handler(BaseHTTPRequestHandler):
 
             # Admin manual reseed live_comments from data.json
             if path == "/api/admin/reseed-live-comments":
-                sid = self._get_admin_sid()
-                admin = ADMIN_SESSIONS.get(sid) if sid else None
+                d = self._read_json()
+                # Allow auth via password in body OR admin session cookie
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
                 if not admin:
                     return self._json(401, {"error": "Admin auth required"})
                 if not DATA_JSON.exists():
