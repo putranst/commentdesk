@@ -1505,6 +1505,31 @@ class Handler(BaseHTTPRequestHandler):
                 c.close()
                 return self._json(200, {"updated": updated})
 
+            # Admin manual reseed live_comments from data.json
+            if path == "/api/admin/reseed-live-comments":
+                sid = self._get_admin_sid()
+                admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                if not DATA_JSON.exists():
+                    return self._json(400, {"error": "data.json not found"})
+                c = db()
+                # Delete old seed rows
+                c.execute("DELETE FROM live_comments WHERE username='__bumen_seed__'")
+                # Insert fresh
+                seeded = 0
+                for p in json.loads(DATA_JSON.read_text()):
+                    for cmt in p.get("comments", []):
+                        c.execute(
+                            "INSERT INTO live_comments(post_id, username, body, scraped_at) VALUES(?, '__bumen_seed__', ?, CURRENT_TIMESTAMP)",
+                            (p["id"], cmt),
+                        )
+                        seeded += 1
+                c.commit()
+                total_seeded = c.execute("SELECT COUNT(*) FROM live_comments WHERE username='__bumen_seed__'").fetchone()[0]
+                c.close()
+                return self._json(200, {"seeded": seeded, "total_seeded": total_seeded})
+
             # Admin live-comments ingestion (password auth for scraper)
             if path == "/api/admin/live-comments":
                 d = self._read_json()
