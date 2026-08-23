@@ -1486,11 +1486,16 @@ class Handler(BaseHTTPRequestHandler):
 
             # Admin bulk thumbnail update (for manual sync from local)
             if path == "/api/admin/update-thumbnails":
-                sid = self._get_admin_sid()
-                admin = ADMIN_SESSIONS.get(sid) if sid else None
+                d = self._read_json()
+                # Allow auth via password in body OR admin session cookie
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
                 if not admin:
                     return self._json(401, {"error": "Admin auth required"})
-                d = self._read_json()
                 updates = d.get("updates", {})
                 if not updates:
                     return self._json(400, {"error": "updates dict required"})
@@ -1503,6 +1508,46 @@ class Handler(BaseHTTPRequestHandler):
                 c.commit()
                 c.close()
                 return self._json(200, {"updated": updated})
+
+            # Admin full sync from data.json (posts + comments + live_comments)
+            if path == "/api/admin/full-sync":
+                d = self._read_json()
+                # Allow auth via password in body
+                if d.get("password") != ADMIN_PW_DEFAULT:
+                    return self._json(401, {"error": "Admin auth required"})
+                if not DATA_JSON.exists():
+                    return self._json(400, {"error": "data.json not found"})
+                c = db()
+                data = json.loads(DATA_JSON.read_text())
+                posts_upserted = 0
+                comments_upserted = 0
+                for p in data:
+                    c.execute(
+                        "INSERT OR IGNORE INTO posts(id, source_url, title, thumbnail_url, description) VALUES(?,?,?,?,?)",
+                        (p["id"], p.get("source_url", ""), p.get("title", ""), p.get("thumb", ""), p.get("description", "")),
+                    )
+                    if c.rowcount > 0:
+                        posts_upserted += 1
+                    for cmt in p.get("comments", []):
+                        c.execute(
+                            "INSERT OR IGNORE INTO comments(post_id, body, status) VALUES(?,?,'available')",
+                            (p["id"], cmt),
+                        )
+                        if c.rowcount > 0:
+                            comments_upserted += 1
+                # Reseed live_comments
+                c.execute("DELETE FROM live_comments WHERE username='__bumen_seed__'")
+                live_seeded = 0
+                for p in data:
+                    for cmt in p.get("comments", []):
+                        c.execute(
+                            "INSERT INTO live_comments(post_id, username, body, scraped_at) VALUES(?, '__bumen_seed__', ?, CURRENT_TIMESTAMP)",
+                            (p["id"], cmt),
+                        )
+                        live_seeded += 1
+                c.commit()
+                c.close()
+                return self._json(200, {"posts_upserted": posts_upserted, "comments_upserted": comments_upserted, "live_seeded": live_seeded})
 
             # Admin manual reseed live_comments from data.json
             if path == "/api/admin/reseed-live-comments":
