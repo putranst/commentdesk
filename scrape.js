@@ -15,18 +15,57 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-const API = 'https://bumen-production.up.railway.app';
+const API = process.env.API_URL || 'http://localhost:8765';
 const ADMIN_PASSWORD = '@poji#1';
+const ADMIN_PW_DEFAULT = '@poji#1';
 const DATA_FILE = path.join(__dirname, 'data.json');
 
+// Simple cookie jar for the scraper
+let cookieJar = '';
+
 // ============================================================================
-// Helpers
+// Image Download Helper
 // ============================================================================
+
+async function downloadImage(page, url, postId) {
+  try {
+    const filename = `thumb_${postId}_${Date.now()}.jpg`;
+    const filepath = path.join(__dirname, 'thumbnails', filename);
+    
+    // Create thumbnails directory
+    await fs.promises.mkdir(path.join(__dirname, 'thumbnails'), { recursive: true });
+    
+    // Use the page's context to download (has Instagram cookies/auth)
+    const buffer = await page.evaluate(async (url) => {
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          'Referer': 'https://www.instagram.com/',
+        },
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const arrayBuffer = await response.arrayBuffer();
+      return Array.from(new Uint8Array(arrayBuffer));
+    }, url);
+    
+    await fs.promises.writeFile(filepath, Buffer.from(buffer));
+    return `/thumbnails/${filename}`;
+  } catch (e) {
+    console.log(`    Download failed: ${e.message}`);
+    return null;
+  }
+}
 
 async function apiCall(endpoint, options = {}) {
   const url = `${API}${endpoint}`;
+  // Use cookieJar if available
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (cookieJar) {
+    headers['Cookie'] = cookieJar;
+  }
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers,
     ...options,
   });
   if (!res.ok) {
@@ -41,21 +80,21 @@ async function apiLogin() {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: ADMIN_PASSWORD }),
+    body: JSON.stringify({ username: 'admin', password: ADMIN_PASSWORD }),
   });
   if (!res.ok) throw new Error(`Login failed: ${res.status}`);
   // Extract cookie from set-cookie header
   const setCookie = res.headers.get('set-cookie') || '';
-  const match = setCookie.match(/admin_session=([^;]+)/);
+  const match = setCookie.match(/bumen_admin_sid=([^;]+)/);
   if (!match) throw new Error('No session cookie in response');
-  return `admin_session=${match[1]}`;
+  cookieJar = `bumen_admin_sid=${match[1]}`;
+  return cookieJar;
 }
 
-async function saveComments(cookie, postId, comments) {
+async function saveComments(postId, comments, thumbnailUrl = null) {
   const res = await apiCall('/api/admin/live-comments', {
     method: 'POST',
-    headers: { 'Cookie': cookie },
-    body: JSON.stringify({ post_id: postId, comments }),
+    body: JSON.stringify({ post_id: postId, comments, thumbnail: thumbnailUrl, password: ADMIN_PW_DEFAULT }),
   });
   return res;
 }
@@ -76,7 +115,57 @@ async function scrapePost(page, url, postId) {
     await new Promise(r => setTimeout(r, 500));
   } catch (_) {}
 
-  // Scroll to load comments
+  // Extract post thumbnail/image
+  let thumbnailUrl = null;
+  try {
+    // Try multiple selectors for the main post image
+    const imgSelectors = [
+      'article img[style*="object-fit: cover"]',
+      'article img[decoding="auto"]',
+      'article header + div img',
+      'article img:first-of-type',
+    ];
+    
+    for (const selector of imgSelectors) {
+      const img = await page.$(selector);
+      if (img) {
+        thumbnailUrl = await page.evaluate(el => el.src, img);
+        if (thumbnailUrl && thumbnailUrl.startsWith('https://scontent')) break;
+      }
+    }
+    
+    // Fallback: try meta og:image
+    if (!thumbnailUrl) {
+      thumbnailUrl = await page.$eval('meta[property="og:image"]', el => el.content).catch(() => null);
+    }
+    
+    if (thumbnailUrl) {
+      console.log(`  📸 Thumbnail: ${thumbnailUrl.substring(0,80)}...`);
+    }
+  } catch (e) {
+    console.log(`  ⚠️  Could not extract thumbnail: ${e.message}`);
+  }
+
+  // Download thumbnail if found
+  let localThumbnail = null;
+  if (thumbnailUrl) {
+    try {
+      localThumbnail = await downloadImage(page, thumbnailUrl, postId);
+      if (localThumbnail) {
+        console.log(`  💾 Thumbnail saved: ${localThumbnail}`);
+      } else {
+        console.log(`  ⚠️  Thumbnail download returned null, proceeding without local thumbnail`);
+        localThumbnail = null;
+      }
+    } catch (e) {
+      console.log(`  ⚠️  Could not download thumbnail: ${e.message}`);
+      localThumbnail = null;
+    }
+  } else {
+    localThumbnail = null;
+  }
+
+  // Scroll to load comments...
   console.log('  Loading comments...');
   let prevCount = 0;
   for (let i = 0; i < 5; i++) {
@@ -112,7 +201,7 @@ async function scrapePost(page, url, postId) {
                     'Jobs', 'Help', 'API', 'Locations'];
       if (skip.some(s => text.includes(s))) return;
       if (text.startsWith('#') && text.length < 30) return;
-      
+
       // Try to find username from nearby elements
       let username = 'anonymous';
       const parent = span.closest('li, div');
@@ -134,7 +223,7 @@ async function scrapePost(page, url, postId) {
   });
 
   console.log(`  ✓ Found ${comments.length} comments`);
-  return comments;
+  return { comments, localThumbnail };
 }
 
 // ============================================================================
@@ -189,12 +278,14 @@ async function main() {
       console.log(`📋 Post ${post.id}: ${post.title}`);
       
       try {
-        const comments = await scrapePost(page, post.source_url, post.id);
+        const result = await scrapePost(page, post.source_url, post.id);
+        const comments = result.comments;
+        const localThumbnail = result.localThumbnail;
         
         if (comments.length > 0) {
-          // Save to API
+          // Save to API with thumbnail
           console.log(`  Saving ${comments.length} comments...`);
-          const result = await saveComments(cookie, post.id, comments);
+          const result = await saveComments(post.id, comments, localThumbnail || null);
           totalSaved += comments.length;
           console.log(`  ✅ Saved. Total: ${totalSaved}\n`);
         } else {
