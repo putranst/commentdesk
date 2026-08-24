@@ -1836,7 +1836,7 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     import threading
     init_db()
-    refresh_instagram_thumbnails()
+    threading.Thread(target=refresh_instagram_thumbnails, daemon=True).start()
     print(f"BUMEN Reviewer —  http://127.0.0.1:{PORT}")
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     # Warm-up: serve a quick request to ensure server is bound
