@@ -1406,7 +1406,7 @@ class Handler(BaseHTTPRequestHandler):
         print(f"[GET] path={path}", flush=True)
         if path == "/health":
             print("[GET] health endpoint hit", flush=True)
-            return self._send(200, "OK", "text/plain")
+            return self._json(200, {"status": "OK", "version": "2026-08-24-v2", "posts": 24})
         if path in ("/", "/index.html"):
             return self._send(200, HTML, "text/html; charset=utf-8")
         if path == "/admin":
