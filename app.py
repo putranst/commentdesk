@@ -153,7 +153,7 @@ def init_db():
         # Always upsert posts + comments so new posts in data.json get added on deploy
         c.execute("DELETE FROM comments WHERE status='available'")
         for p in json.loads(DATA_JSON.read_text()):
-            src_url = p.get("source_url") or p.get("url") or ""
+            src_url = normalize_ig_url(p.get("source_url") or p.get("url") or "")
             thumb_url = p.get("thumbnail_url") or p.get("thumb") or ""
             c.execute(
                 "INSERT OR IGNORE INTO posts(id, source_url, title, thumbnail_url, description) VALUES(?,?,?,?,?)",
@@ -200,6 +200,16 @@ def init_db():
 
     # Seed default admin if not exists
     seed_default_admin()
+
+def normalize_ig_url(url):
+    """Normalize any Instagram post/reel URL to canonical https://www.instagram.com/p/<shortcode>/ format."""
+    if not url:
+        return ""
+    import re
+    m = re.search(r'instagram\.com/(?:p|reel|reels)/([A-Za-z0-9_-]+)', str(url))
+    if m:
+        return f"https://www.instagram.com/p/{m.group(1)}/"
+    return str(url)
 
 def get_thumb_path(post_id):
     """Return local disk path for post thumbnail cache."""
@@ -400,7 +410,7 @@ def claim_next_comment(user_id):
         "post_id": row["post_id"],
         "post_title": row["title"],
         "thumbnail_url": row["thumbnail_url"],
-        "source_url": row["source_url"],
+        "source_url": normalize_ig_url(row["source_url"]),
         "state": "claimed",
     }
 
@@ -446,7 +456,7 @@ def copy_comment(user_id, assignment_id):
     c.execute("UPDATE assignments SET state='copied', copied_at=CURRENT_TIMESTAMP WHERE id=?",
               (assignment_id,))
     c.commit(); c.close()
-    return {"body": row["body"], "source_url": row["source_url"], "post_title": row["title"]}
+    return {"body": row["body"], "source_url": normalize_ig_url(row["source_url"]), "post_title": row["title"]}
 
 def report_unconfirmed(user_id, assignment_id, note):
     c = db()
@@ -1724,7 +1734,7 @@ class Handler(BaseHTTPRequestHandler):
                 "assignment_id": row["aid"], "state": row["state"],
                 "comment_id": row["cid"], "body": row["body"],
                 "post_id": row["post_id"], "post_title": row["title"],
-                "thumbnail_url": row["thumbnail_url"], "source_url": row["source_url"],
+                "thumbnail_url": row["thumbnail_url"], "source_url": normalize_ig_url(row["source_url"]),
                 "description": row["description"] or "",
                 "date_posted": date_posted or "",
             }

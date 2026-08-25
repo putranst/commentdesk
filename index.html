@@ -587,13 +587,20 @@ async function claimNext(){
   }catch(e){toast(e.message)}
 }
 
+function cleanIGUrl(url) {
+  if (!url) return '';
+  const m = String(url).match(/instagram\.com\/(?:p|reel|reels)\/([A-Za-z0-9_-]+)/);
+  return m ? `https://www.instagram.com/p/${m[1]}/` : url;
+}
+
 async function copyOpen(aid){
   try{
     const d=await api('/api/copy',{method:'POST',body:JSON.stringify({assignment_id:aid})});
     try{await navigator.clipboard.writeText(d.body)}catch(_){}
     toast('Tersalin ✓');
-    if(d.source_url && d.source_url.startsWith('http')){
-      setTimeout(()=>{window.open(d.source_url,'_blank')},250);
+    const url = cleanIGUrl(d.source_url);
+    if(url && url.startsWith('http')){
+      setTimeout(()=>{window.open(url,'_blank')},250);
     }
     setTimeout(()=>showVerify(),1500);
     await refresh();
@@ -602,7 +609,8 @@ async function copyOpen(aid){
 function openIG(aid){
   const all=[S.active,...(S.queue||[]),...(S.done||[])].filter(Boolean);
   const item=all.find(x=>x.assignment_id===aid)||S.active;
-  const url=item?.source_url||S.active?.source_url;
+  const rawUrl=item?.source_url||S.active?.source_url;
+  const url=cleanIGUrl(rawUrl);
   if(url && url.startsWith('http')){
     window.open(url,'_blank');
   }else{
