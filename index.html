@@ -481,8 +481,8 @@ function renderActive(){
   }
   $('empty-tugas').style.display='none';
   const a=S.active;
-  const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
-  const thumbStyle=thumbUrl?`background-image:url('${esc(thumbUrl)}')`:'';
+  const thumbUrl=a.post_id?`/api/thumbnail/${a.post_id}`:(a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'/bumen-logo.png');
+  const thumbStyle=`background-image:url('${esc(thumbUrl)}')`;
   const stateLabel={claimed:'BELUM',copied:'TERSALIN',reported:'DILAPORKAN'}[a.state]||a.state;
   const stateClass=a.state;
   el.innerHTML=`
@@ -518,9 +518,9 @@ function renderQueue(){
   if(!S.queue.length){q.innerHTML='';title.style.display='none';return}
   title.style.display='block';
   q.innerHTML=S.queue.map(a=>{
-    const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
+    const thumbUrl=a.post_id?`/api/thumbnail/${a.post_id}`:(a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'/bumen-logo.png');
     return `<div class="q-card" onclick="onLockedCard()">
-      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}" onerror="this.onerror=null;this.style.background='#e6e8ee';this.innerHTML='<div class=thumb-placeholder>🖼️</div>'"></div>
+      <div class="thumb" style="background-image:url('${esc(thumbUrl)}')" onerror="this.onerror=null;this.style.background='#e6e8ee';this.innerHTML='<div class=thumb-placeholder>🖼️</div>'"></div>
       <div class="info">
         <div class="t">${esc(a.post_title)}</div>
         <div class="s">Tugas berikutnya · selesaikan yang aktif dulu</div>
@@ -534,9 +534,9 @@ function renderDone(){
   if(!S.done.length){$('empty-selesai').style.display='block';el.innerHTML='';return}
   $('empty-selesai').style.display='none';
   el.innerHTML=S.done.map(a=>{
-    const thumbUrl=a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'';
+    const thumbUrl=a.post_id?`/api/thumbnail/${a.post_id}`:(a.thumbnail_url?`/api/image-proxy/${encodeURIComponent(a.thumbnail_url)}`:'/bumen-logo.png');
     return `<div class="done-card">
-      <div class="thumb" style="${thumbUrl?`background-image:url('${esc(thumbUrl)}')`:''}" onerror="this.onerror=null;this.style.background='#e6e8ee';this.innerHTML='<div class=thumb-placeholder>🖼️</div>'"></div>
+      <div class="thumb" style="background-image:url('${esc(thumbUrl)}')" onerror="this.onerror=null;this.style.background='#e6e8ee';this.innerHTML='<div class=thumb-placeholder>🖼️</div>'"></div>
       <div class="info">
         <div class="t">${esc(a.post_title)}</div>
         <div class="s">✓ Sudah diverifikasi</div>
@@ -552,7 +552,7 @@ function onLockedCard(){
 
 function openPreview(aid){
   const a=S.active; if(!a||a.assignment_id!==aid)return;
-  $('preview-img').src=a.thumbnail_url||'';
+  $('preview-img').src=a.post_id?`/api/thumbnail/${a.post_id}`:(a.thumbnail_url||'/bumen-logo.png');
   $('preview-img').alt=a.post_title||'Post';
   $('preview-title').textContent=a.post_title||'';
   // Format date_posted
@@ -592,14 +592,22 @@ async function copyOpen(aid){
     const d=await api('/api/copy',{method:'POST',body:JSON.stringify({assignment_id:aid})});
     try{await navigator.clipboard.writeText(d.body)}catch(_){}
     toast('Tersalin ✓');
-    setTimeout(()=>{window.open(d.source_url,'_blank')},250);
+    if(d.source_url && d.source_url.startsWith('http')){
+      setTimeout(()=>{window.open(d.source_url,'_blank')},250);
+    }
     setTimeout(()=>showVerify(),1500);
     await refresh();
   }catch(e){toast(e.message)}
 }
 function openIG(aid){
-  const a=S.active; if(!a)return;
-  window.open(a.source_url,'_blank');
+  const all=[S.active,...(S.queue||[]),...(S.done||[])].filter(Boolean);
+  const item=all.find(x=>x.assignment_id===aid)||S.active;
+  const url=item?.source_url||S.active?.source_url;
+  if(url && url.startsWith('http')){
+    window.open(url,'_blank');
+  }else{
+    toast('URL post tidak ditemukan');
+  }
 }
 
 function showVerify(){ $('verify-modal').classList.add('open') }

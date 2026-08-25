@@ -152,9 +152,15 @@ def init_db():
         print(f"[DEBUG] data.json exists, posts in DB: {n_posts}", flush=True)
         # Always upsert posts + comments so new posts in data.json get added on deploy
         for p in json.loads(DATA_JSON.read_text()):
+            src_url = p.get("source_url") or p.get("url") or ""
+            thumb_url = p.get("thumbnail_url") or p.get("thumb") or ""
             c.execute(
                 "INSERT OR IGNORE INTO posts(id, source_url, title, thumbnail_url, description) VALUES(?,?,?,?,?)",
-                (p["id"], p.get("source_url", ""), p.get("title", ""), p.get("thumb", ""), p.get("description", "")),
+                (p["id"], src_url, p.get("title", ""), thumb_url, p.get("description", "")),
+            )
+            c.execute(
+                "UPDATE posts SET source_url = ?, thumbnail_url = CASE WHEN thumbnail_url = '' OR thumbnail_url IS NULL THEN ? ELSE thumbnail_url END WHERE id = ?",
+                (src_url, thumb_url, p["id"]),
             )
             for cmt in p.get("comments", []):
                 c.execute(
@@ -194,9 +200,41 @@ def init_db():
     # Seed default admin if not exists
     seed_default_admin()
 
+def get_thumb_path(post_id):
+    """Return local disk path for post thumbnail cache."""
+    data_dir = Path(os.environ.get("THUMBS_DIR", "/data/thumbs"))
+    local_dir = ROOT / "thumbs"
+    try:
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return data_dir / f"{post_id}.jpg"
+    except Exception:
+        local_dir.mkdir(parents=True, exist_ok=True)
+        return local_dir / f"{post_id}.jpg"
+
+def save_thumbnail_cache(post_id, url):
+    """Download image data from url and save to local disk cache."""
+    if not url or not url.startswith("http"):
+        return False
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
+            "Referer": "https://www.instagram.com/",
+        })
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            if resp.status == 200:
+                data = resp.read()
+                if len(data) > 500:
+                    p = get_thumb_path(post_id)
+                    p.write_bytes(data)
+                    return True
+    except Exception as e:
+        print(f"[DEBUG] save_thumbnail_cache failed for post {post_id}: {e}", flush=True)
+    return False
+
 # Refresh Instagram thumbnails using instaloader
 def refresh_instagram_thumbnails():
-    """Fetch fresh thumbnail URLs from Instagram for all posts and update database."""
+    """Fetch fresh thumbnail URLs from Instagram for all posts and update database & disk cache."""
     try:
         import instaloader
         L = instaloader.Instaloader()
@@ -208,9 +246,10 @@ def refresh_instagram_thumbnails():
         
         for post_id, source_url in rows:
             try:
-                # Extract shortcode from Instagram URL
+                if not source_url:
+                    continue
                 import re
-                match = re.search(r'instagram\.com/p/([A-Za-z0-9_-]+)/?', source_url)
+                match = re.search(r'instagram\.com/(?:p|reel)/([A-Za-z0-9_-]+)', source_url)
                 if not match:
                     continue
                 shortcode = match.group(1)
@@ -222,6 +261,8 @@ def refresh_instagram_thumbnails():
                 c.execute("UPDATE posts SET thumbnail_url = ? WHERE id = ?", (fresh_url, post_id))
                 c.commit()
                 c.close()
+
+                save_thumbnail_cache(post_id, fresh_url)
                 print(f"✅ Refreshed thumbnail for post {post_id} ({shortcode})")
             except Exception as e:
                 print(f"⚠️ Failed to refresh thumbnail for post {post_id}: {e}")
@@ -1413,6 +1454,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, ADMIN_HTML, "text/html; charset=utf-8")
         if path == "/bumen-logo.png":
             return self._file(ROOT / "bumen-logo.png", "image/png")
+        if path.startswith("/api/thumbnail/"):
+            return self._handle_thumbnail(path)
         if path.startswith("/api/image-proxy/"):
             return self._handle_image_proxy(path)
         if path.startswith("/api/admin/"):
@@ -1781,6 +1824,37 @@ class Handler(BaseHTTPRequestHandler):
 
 
         return self._json(404, {"error": "Not found"})
+
+    def _handle_thumbnail(self, path):
+        """Serve cached post thumbnail from local disk cache or fetch & cache on demand."""
+        try:
+            post_id = int(path[len("/api/thumbnail/"):])
+        except (ValueError, TypeError):
+            return self._json(400, {"error": "Invalid post ID"})
+
+        target_file = get_thumb_path(post_id)
+        if target_file.exists() and target_file.stat().st_size > 500:
+            return self._file(target_file, "image/jpeg")
+
+        # Not cached: fetch from DB
+        c = db()
+        row = c.execute("SELECT thumbnail_url, source_url FROM posts WHERE id = ?", (post_id,)).fetchone()
+        c.close()
+
+        if not row:
+            return self._json(404, {"error": "Post not found"})
+
+        thumb_url = row["thumbnail_url"]
+        if thumb_url and thumb_url.startswith("http"):
+            if save_thumbnail_cache(post_id, thumb_url):
+                if target_file.exists() and target_file.stat().st_size > 500:
+                    return self._file(target_file, "image/jpeg")
+
+        # Fallback to logo
+        logo_path = ROOT / "bumen-logo.png"
+        if logo_path.exists():
+            return self._file(logo_path, "image/png")
+        return self._json(404, {"error": "Thumbnail not found"})
 
     def _handle_image_proxy(self, path):
         """Proxy Instagram CDN images to avoid hotlink blocking."""
