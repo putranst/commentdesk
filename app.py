@@ -151,6 +151,7 @@ def init_db():
         n_posts = c.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
         print(f"[DEBUG] data.json exists, posts in DB: {n_posts}", flush=True)
         # Always upsert posts + comments so new posts in data.json get added on deploy
+        c.execute("DELETE FROM comments WHERE status='available'")
         for p in json.loads(DATA_JSON.read_text()):
             src_url = p.get("source_url") or p.get("url") or ""
             thumb_url = p.get("thumbnail_url") or p.get("thumb") or ""
@@ -159,8 +160,8 @@ def init_db():
                 (p["id"], src_url, p.get("title", ""), thumb_url, p.get("description", "")),
             )
             c.execute(
-                "UPDATE posts SET source_url = ?, thumbnail_url = CASE WHEN thumbnail_url = '' OR thumbnail_url IS NULL THEN ? ELSE thumbnail_url END WHERE id = ?",
-                (src_url, thumb_url, p["id"]),
+                "UPDATE posts SET title = ?, source_url = ?, thumbnail_url = CASE WHEN thumbnail_url = '' OR thumbnail_url IS NULL THEN ? ELSE thumbnail_url END WHERE id = ?",
+                (p.get("title", ""), src_url, thumb_url, p["id"]),
             )
             for cmt in p.get("comments", []):
                 c.execute(
