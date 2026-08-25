@@ -180,7 +180,7 @@ def init_db():
             for p in json.loads(DATA_JSON.read_text()):
                 for cmt in p.get("comments", []):
                     c.execute(
-                        "INSERT INTO live_comments(post_id, username, body, scraped_at) VALUES(?, '__bumen_seed__', ?, CURRENT_TIMESTAMP)",
+                        "INSERT OR IGNORE INTO live_comments(post_id, username, body, scraped_at) VALUES(?, '__bumen_seed__', ?, CURRENT_TIMESTAMP)",
                         (p["id"], cmt),
                     )
                     seeded += 1
