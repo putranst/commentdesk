@@ -9,6 +9,19 @@ from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 import sqlite3, json, secrets, os, re, hashlib, time
 from http import cookies
+import threading
+
+# Bright Data scraper module
+try:
+    from brightdata_scraper import (
+        init_bd_tables, run_full_scrape, get_analytics,
+        search_commenters, get_comments_by_user, get_comments_by_post,
+        discover_posts, scrape_comments, ingest_posts, ingest_comments
+    )
+    BD_AVAILABLE = True
+except Exception as e:
+    print(f"[DEBUG] brightdata_scraper not available: {e}", flush=True)
+    BD_AVAILABLE = False
 
 ROOT = Path(__file__).resolve().parent
 DB   = Path(os.environ.get("DB_PATH", str(ROOT / "bumen.db")))
@@ -682,13 +695,45 @@ tr:hover td{background:#fafbfd}
     </div>
 
     <div class="section">
-      <div class="section-head"><h2>⚠️ Reports inbox</h2><span class="count" id="cnt-reports">0</span></div>
+      <div class="section-head"><h2>⚠️ Repost Inbox</h2><span class="count" id="cnt-reports">0</span></div>
       <div id="list-reports"></div>
     </div>
 
     <div class="section">
-      <div class="section-head"><h2>📋 Login events</h2><span class="count" id="cnt-logins">0</span></div>
+      <div class="section-head"><h2>📋 Login Events</h2><span class="count" id="cnt-logins">0</span></div>
       <div id="list-logins"></div>
+    </div>
+
+    <div class="section" id="bd-section">
+      <div class="section-head">
+        <h2>📊 Social Intelligence (Bright Data)</h2>
+        <span class="count" id="bd-status">—</span>
+      </div>
+      <div style="padding:14px 18px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+          <input id="bd-profile" placeholder="IG username (e.g. duniameutya)" value="duniameutya" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:180px">
+          <input id="bd-start" type="text" placeholder="Start MM-DD-YYYY" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:140px">
+          <input id="bd-end" type="text" placeholder="End MM-DD-YYYY" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:140px">
+          <button onclick="bdLoadAnalytics()" style="padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;background:var(--accent);color:#fff;border:0">Load Analytics</button>
+          <button onclick="bdTriggerScrape()" style="padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;background:var(--ink);color:#fff;border:0">⚡ Trigger Scrape</button>
+        </div>
+
+        <div class="kpis" id="bd-kpis" style="margin-bottom:14px"></div>
+
+        <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+          <input id="bd-search" placeholder="Search commenter username..." style="flex:1;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" onkeyup="if(event.key==='Enter')bdSearchCommenters()">
+          <button onclick="bdSearchCommenters()" style="padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;background:#fff;border:1px solid var(--line)">Search</button>
+        </div>
+        <div id="bd-search-results" style="margin-bottom:14px"></div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Posts Performance <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">— click any row to load comments</span></h3>
+        <div style="overflow-x:auto"><table id="bd-posts"><thead><tr><th>Date</th><th>Type</th><th>Likes</th><th>Comments</th><th>Description</th></tr></thead><tbody></tbody></table></div>
+
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:18px 0 8px">Top Commenters</h3>
+        <div style="overflow-x:auto"><table id="bd-top-commenters"><thead><tr><th>#</th><th>Username</th><th>Comments</th><th>Total Likes</th><th>Last Active</th><th></th></tr></thead><tbody></tbody></table></div>
+
+        <div id="bd-user-detail" style="margin-top:14px"></div>
+      </div>
     </div>
 
     <div class="section">
@@ -767,6 +812,113 @@ async function refresh(){
 }
 
 window.doAdminLogin=doAdminLogin; window.doAdminLogout=doAdminLogout;
+
+// === BRIGHT DATA ANALYTICS ===
+async function bdLoadAnalytics(){
+  const profile=$('bd-profile').value.trim()||'duniameutya';
+  const start=$('bd-start').value.trim();
+  const end=$('bd-end').value.trim();
+  $('bd-status').textContent='Loading...';
+  try{
+    const body={profile};
+    if(start)body.start_date=start;
+    if(end)body.end_date=end;
+    const d=await api('/api/admin/bd-analytics',{method:'POST',body:JSON.stringify(body)});
+    // KPIs
+    $('bd-kpis').innerHTML=`
+      <div class="kpi"><div class="lbl">Posts</div><div class="val">${d.total_posts}</div></div>
+      <div class="kpi good"><div class="lbl">Comments</div><div class="val">${d.total_comments}</div></div>
+      <div class="kpi"><div class="lbl">Unique Commenters</div><div class="val">${d.unique_commenters}</div></div>
+      <div class="kpi"><div class="lbl">Avg Comments/Post</div><div class="val">${d.total_posts?Math.round(d.total_comments/d.total_posts):0}</div></div>`;
+    // Top commenters
+    $('bd-top-commenters').querySelector('tbody').innerHTML=d.top_commenters.map((u,i)=>
+      `<tr><td>${i+1}</td><td><b>@${esc(u.username)}</b></td><td>${u.comment_count}</td><td>${u.total_likes||0}</td><td>${relTime(u.last_comment_date)}</td><td><button onclick="bdShowUser('${esc(u.username)}')" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:#fff;font-weight:600">View</button></td></tr>`
+    ).join('')||'<tr><td colspan="6" class="empty">No data. Run a scrape first.</td></tr>';
+    // Posts
+    $('bd-posts').querySelector('tbody').innerHTML=d.posts_summary.map(p=>{
+      const desc=(p.description||'').substring(0,80);
+      const dateStr=(p.date_posted||'').substring(0,10);
+      const scraped=p.scraped_comments||0;
+      const reported=p.num_comments||0;
+      const commentBadge=scraped>0?`<b style="color:var(--accent)">${scraped}</b>`:`<span style="color:var(--muted)">0</span>`;
+      return `<tr style="cursor:pointer" onclick="bdShowPost('${esc(p.url)}')"><td>${dateStr}</td><td><span class="badge muted">${esc(p.content_type||'')}</span></td><td>${p.likes||0}</td><td>${commentBadge}${reported?`<span style="color:var(--muted);font-size:11px">/${reported}</span>`:''}</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(desc)}</td></tr>`;
+    }).join('')||'<tr><td colspan="6" class="empty">No posts</td></tr>';
+    $('bd-status').textContent='✓ Loaded';
+  }catch(e){
+    $('bd-status').textContent='Error';
+    console.error(e);
+  }
+}
+
+async function bdTriggerScrape(){
+  const profile=$('bd-profile').value.trim()||'duniameutya';
+  const start=$('bd-start').value.trim();
+  const end=$('bd-end').value.trim();
+  if(!confirm(`Scrape @{profile} (${start||'all'} to ${end||'all'})?\\nThis runs in background (~3-5 min).`))return;
+  $('bd-status').textContent='Scraping...';
+  try{
+    const body={profile};
+    if(start)body.start_date=start;
+    if(end)body.end_date=end;
+    const d=await api('/api/admin/bd-scrape',{method:'POST',body:JSON.stringify(body)});
+    $('bd-status').textContent='⏳ '+d.message;
+    // Poll analytics after 60s
+    setTimeout(()=>bdLoadAnalytics(),60000);
+  }catch(e){
+    $('bd-status').textContent='Error: '+e.message;
+  }
+}
+
+async function bdSearchCommenters(){
+  const term=$('bd-search').value.trim();
+  if(!term)return;
+  try{
+    const d=await api('/api/admin/bd-search-commenters',{method:'POST',body:JSON.stringify({search:term})});
+    $('bd-search-results').innerHTML=d.results.length?d.results.map(u=>
+      `<div class="evt" style="cursor:pointer" onclick="bdShowUser('${esc(u.username)}')"><span class="tag">@${esc(u.username)}</span> ${u.comment_count} comments · ${u.total_likes||0} likes · last: ${relTime(u.last_comment)}</div>`
+    ).join(''):'<div class="empty">No matches</div>';
+  }catch(e){console.error(e)}
+}
+
+async function bdShowUser(username){
+  try{
+    const d=await api('/api/admin/bd-user-comments',{method:'POST',body:JSON.stringify({username})});
+    const html=d.comments.map(c=>{
+      const date=(c.comment_date||'').substring(0,10);
+      return `<div class="report-row"><div><b>@${esc(c.comment_user)}</b> · ${date} · ${c.likes_number||0} likes</div><div class="body">${esc(c.comment||'')}</div><div class="meta">📌 <a href="${esc(c.post_url)}" target="_blank" style="color:var(--accent)">${esc(c.post_url)}</a></div></div>`;
+    }).join('');
+    $('bd-user-detail').innerHTML=`<h3 style="font-size:14px;font-weight:700;margin:0 0 10px">Comments by @${esc(username)} (${d.comments.length})</h3>${html||'<div class="empty">No comments found</div>'}`;
+    $('bd-user-detail').scrollIntoView({behavior:'smooth'});
+  }catch(e){console.error(e)}
+}
+
+async function bdShowPost(postUrl){
+  try{
+    const d=await api('/api/admin/bd-post-comments',{method:'POST',body:JSON.stringify({post_url:postUrl})});
+    const p=d.post||{};
+    const dateStr=(p.date_posted||'').substring(0,10);
+    const comments=d.comments||[];
+    const html=comments.map(c=>{
+      const cdate=(c.comment_date||'').substring(0,10);
+      return `<div class="report-row"><div><b>@${esc(c.comment_user)}</b> · ${cdate} · ${c.likes_number||0} likes · ${c.replies_number||0} replies</div><div class="body">${esc(c.comment||'')}</div></div>`;
+    }).join('');
+    $('bd-user-detail').innerHTML=`
+      <h3 style="font-size:14px;font-weight:700;margin:0 0 4px">Post Comments — ${dateStr} (${comments.length} scraped / ${p.num_comments||0} total)</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 6px">${esc((p.description||'').substring(0,150))}${(p.description||'').length>150?'…':''}</p>
+      <p style="margin:0 0 10px"><a href="${esc(p.url)}" target="_blank" style="color:var(--accent);font-size:13px">↗ Open on Instagram</a> · ${p.likes||0} likes · ${p.content_type||''}</p>
+      ${html||'<div class="empty">No comments scraped for this post yet</div>'}`;
+    $('bd-user-detail').scrollIntoView({behavior:'smooth'});
+  }catch(e){console.error(e)}
+}
+
+window.bdLoadAnalytics=bdLoadAnalytics; window.bdTriggerScrape=bdTriggerScrape;
+window.bdSearchCommenters=bdSearchCommenters; window.bdShowUser=bdShowUser;
+window.bdShowPost=bdShowPost;
+
+// Auto-load BD analytics on boot
+const origRefresh=refresh;
+refresh=async function(){await origRefresh();try{await bdLoadAnalytics()}catch(_){}};
+
 boot();
 </script>
 </body></html>'''
@@ -1679,6 +1831,126 @@ class Handler(BaseHTTPRequestHandler):
                 c.commit(); c.close()
                 return self._json(200, {"saved": saved})
 
+            # === BRIGHT DATA SCRAPE ENDPOINTS ===
+
+            # Trigger Bright Data scrape (async, runs in background)
+            if path == "/api/admin/bd-scrape":
+                d = self._read_json()
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                if not BD_AVAILABLE:
+                    return self._json(500, {"error": "brightdata_scraper module not available"})
+
+                profile = d.get("profile", "duniameutya")
+                start_date = d.get("start_date")  # MM-DD-YYYY
+                end_date = d.get("end_date")      # MM-DD-YYYY
+                num_posts = d.get("num_posts", 100)
+
+                # Run in background thread
+                def do_scrape():
+                    try:
+                        result = run_full_scrape(
+                            profile=profile,
+                            start_date=start_date,
+                            end_date=end_date,
+                            num_posts=num_posts
+                        )
+                        print(f"[BD] Scrape result: {json.dumps(result)}", flush=True)
+                    except Exception as e:
+                        print(f"[BD] Scrape error: {e}", flush=True)
+
+                threading.Thread(target=do_scrape, daemon=True).start()
+                return self._json(200, {
+                    "status": "started",
+                    "message": f"Scraping @{profile} ({start_date or 'all'} to {end_date or 'all'}) in background"
+                })
+
+            # Get Bright Data analytics
+            if path == "/api/admin/bd-analytics":
+                d = self._read_json()
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                if not BD_AVAILABLE:
+                    return self._json(500, {"error": "brightdata_scraper module not available"})
+
+                profile = d.get("profile", "duniameutya")
+                start_date = d.get("start_date")
+                end_date = d.get("end_date")
+                analytics = get_analytics(profile=profile, start_date=start_date, end_date=end_date)
+                return self._json(200, analytics)
+
+            # Search commenters
+            if path == "/api/admin/bd-search-commenters":
+                d = self._read_json()
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                if not BD_AVAILABLE:
+                    return self._json(500, {"error": "brightdata_scraper module not available"})
+
+                search_term = d.get("search", "")
+                if not search_term:
+                    return self._json(400, {"error": "search term required"})
+                results = search_commenters(search_term, limit=50)
+                return self._json(200, {"results": results})
+
+            # Get comments by specific user
+            if path == "/api/admin/bd-user-comments":
+                d = self._read_json()
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                if not BD_AVAILABLE:
+                    return self._json(500, {"error": "brightdata_scraper module not available"})
+
+                username = d.get("username", "")
+                if not username:
+                    return self._json(400, {"error": "username required"})
+                comments = get_comments_by_user(username)
+                return self._json(200, {"username": username, "comments": comments})
+
+            # Get comments by post URL
+            if path == "/api/admin/bd-post-comments":
+                d = self._read_json()
+                admin = None
+                if d.get("password") == ADMIN_PW_DEFAULT:
+                    admin = {"username": "admin", "id": 1}
+                else:
+                    sid = self._get_admin_sid()
+                    admin = ADMIN_SESSIONS.get(sid) if sid else None
+                if not admin:
+                    return self._json(401, {"error": "Admin auth required"})
+                if not BD_AVAILABLE:
+                    return self._json(500, {"error": "brightdata_scraper module not available"})
+
+                post_url = d.get("post_url", "")
+                if not post_url:
+                    return self._json(400, {"error": "post_url required"})
+                result = get_comments_by_post(post_url)
+                return self._json(200, result)
+
             user = SESSIONS.get(self._get_sid() or "")
             if not user: return self._json(401, {"error": "Belum login"})
 
@@ -1921,6 +2193,13 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     import threading
     init_db()
+    # Initialize Bright Data tables
+    if BD_AVAILABLE:
+        try:
+            init_bd_tables()
+            print("[DEBUG] Bright Data tables initialized", flush=True)
+        except Exception as e:
+            print(f"[DEBUG] BD table init error: {e}", flush=True)
     threading.Thread(target=refresh_instagram_thumbnails, daemon=True).start()
     print(f"BUMEN Reviewer —  http://127.0.0.1:{PORT}")
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
