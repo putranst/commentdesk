@@ -1,3 +1,4 @@
 # BUMEN Intelligence - dependencies
 instaloader>=4.15.3
+requests>=2.31.0
 # FORCE FULL REBUILD 20260824
