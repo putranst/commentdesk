@@ -775,17 +775,25 @@ async function refresh(){
   const s=d.summary;
   $('kpis').innerHTML=`
     <div class="kpi"><div class="lbl">Users</div><div class="val">${s.users_total}</div><div class="sub">${s.reviewers_active_24h} active 24h</div></div>
-    <div class="kpi"><div class="lbl">Posts</div><div class="val">${s.posts_total}</div><div class="sub">${s.comments_total} total comments</div></div>
+    <div class="kpi"><div class="lbl">Posts</div><div class="val">${s.bd_posts_total}</div><div class="sub">${s.bd_comments_total} comments · ${s.bd_unique_commenters} commenters</div></div>
     <div class="kpi good"><div class="lbl">Done</div><div class="val">${s.assignments_done}</div><div class="sub">${Math.round(s.assignments_done/(s.assignments_total||1)*100)}% complete</div></div>
     <div class="kpi warn"><div class="lbl">In progress</div><div class="val">${s.assignments_in_progress}</div></div>
     <div class="kpi ${s.open_reports?'bad':''}"><div class="lbl">Open reports</div><div class="val">${s.open_reports}</div></div>
     <div class="kpi"><div class="lbl">Available comments</div><div class="val">${s.comments_available}</div></div>`;
-  // Posts
+  // Kanban Posts
   $('cnt-posts').textContent=d.posts.length;
   $('tbl-posts').querySelector('tbody').innerHTML=d.posts.map(p=>{
     const pct=p.comment_count?(p.done || 0)/p.comment_count*100:0;
     return `<tr><td>${p.id}</td><td><b>${esc(p.title)}</b></td><td>${p.comment_count}</td><td>${p.assigned||0}</td><td>${p.done||0}</td><td><div class="progress"><div class="fill" style="width:${pct}%"></div></div> ${Math.round(pct)}%</td></tr>`;
   }).join('')||'<tr><td colspan="6" class="empty">No posts yet</td></tr>';
+  // Bright Data Posts
+  if(d.bd_posts){
+    $('bd-posts').querySelector('tbody').innerHTML=d.bd_posts.map(p=>{
+      const dateStr=(p.date_posted||'').substring(0,10);
+      const desc=(p.description||'').substring(0,80);
+      return `<tr><td>${dateStr}</td><td><span class="badge muted">${esc(p.content_type||'')}</span></td><td>${p.likes||0}</td><td>${p.num_comments||0}</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(desc)}</td></tr>`;
+    }).join('')||'<tr><td colspan="5" class="empty">No Bright Data posts</td></tr>';
+  }
   // Users
   $('cnt-users').textContent=d.users.length;
   $('tbl-users').querySelector('tbody').innerHTML=d.users.map(u=>{
@@ -2060,6 +2068,10 @@ class Handler(BaseHTTPRequestHandler):
                 "posts_total": c.execute("SELECT COUNT(*) FROM posts").fetchone()[0],
                 "comments_total": c.execute("SELECT COUNT(*) FROM comments").fetchone()[0],
                 "comments_available": c.execute("SELECT COUNT(*) FROM comments WHERE status='available'").fetchone()[0],
+                # Bright Data summary
+                "bd_posts_total": c.execute("SELECT COUNT(*) FROM bd_posts").fetchone()[0],
+                "bd_comments_total": c.execute("SELECT COUNT(*) FROM bd_comments").fetchone()[0],
+                "bd_unique_commenters": c.execute("SELECT COUNT(DISTINCT LOWER(comment_user)) FROM bd_comments WHERE comment_user != ''").fetchone()[0],
             }
             users = [dict(r) for r in c.execute("""
                 SELECT u.id, u.handle, u.created_at, u.last_seen_at, u.last_ip,
@@ -2068,6 +2080,7 @@ class Handler(BaseHTTPRequestHandler):
                 FROM users u LEFT JOIN assignments a ON a.user_id = u.id
                 GROUP BY u.id ORDER BY u.last_seen_at DESC NULLS LAST
             """)]
+            # Kanban posts (from data.json)
             posts = [dict(r) for r in c.execute("""
                 SELECT p.id, p.title, p.source_url, p.thumbnail_url,
                        COUNT(DISTINCT cm.id) AS comment_count,
@@ -2077,6 +2090,13 @@ class Handler(BaseHTTPRequestHandler):
                 LEFT JOIN comments cm ON cm.post_id = p.id
                 LEFT JOIN assignments a ON a.comment_id = cm.id
                 GROUP BY p.id ORDER BY p.id
+            """)]
+            # Bright Data posts (scraped from Instagram)
+            bd_posts = [dict(r) for r in c.execute("""
+                SELECT id, url, shortcode, user_posted, description, date_posted, content_type,
+                       num_comments, likes, thumbnail, scraped_at
+                FROM bd_posts
+                ORDER BY date_posted DESC
             """)]
             reports = [dict(r) for r in c.execute("""
                 SELECT r.id, r.note, r.attempt_count, r.created_at, r.resolved,
@@ -2100,6 +2120,7 @@ class Handler(BaseHTTPRequestHandler):
                 "summary": summary, "users": users, "posts": posts,
                 "reports": reports, "login_events": login_events,
                 "assignment_events": assignment_events,
+                "bd_posts": bd_posts,
             })
         c.close()
         return self._json(404, {"error": "Not found"})
