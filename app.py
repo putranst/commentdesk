@@ -684,26 +684,6 @@ tr:hover td{background:#fafbfd}
 
     <div class="kpis" id="kpis"></div>
 
-    <div class="section">
-      <div class="section-head"><h2>📌 Posts</h2><span class="count" id="cnt-posts">0</span></div>
-      <div style="overflow-x:auto"><table id="tbl-posts"><thead><tr><th>#</th><th>Title</th><th>Comments</th><th>Assigned</th><th>Done</th><th>Progress</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <div class="section">
-      <div class="section-head"><h2>👥 Reviewers</h2><span class="count" id="cnt-users">0</span></div>
-      <div style="overflow-x:auto"><table id="tbl-users"><thead><tr><th>Handle</th><th>Joined</th><th>Last seen</th><th>IP</th><th>Assignments</th><th>Done</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <div class="section">
-      <div class="section-head"><h2>⚠️ Repost Inbox</h2><span class="count" id="cnt-reports">0</span></div>
-      <div id="list-reports"></div>
-    </div>
-
-    <div class="section">
-      <div class="section-head"><h2>📋 Login Events</h2><span class="count" id="cnt-logins">0</span></div>
-      <div id="list-logins"></div>
-    </div>
-
     <div class="section" id="bd-section">
       <div class="section-head">
         <h2>📊 Social Intelligence (Bright Data)</h2>
@@ -712,8 +692,17 @@ tr:hover td{background:#fafbfd}
       <div style="padding:14px 18px">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
           <input id="bd-profile" placeholder="IG username (e.g. duniameutya)" value="duniameutya" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:180px">
-          <input id="bd-start" type="text" placeholder="Start MM-DD-YYYY" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:140px">
-          <input id="bd-end" type="text" placeholder="End MM-DD-YYYY" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:140px">
+          <select id="bd-month-filter" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:160px">
+            <option value="">All months</option>
+          </select>
+          <select id="bd-sort" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:160px">
+            <option value="date_desc">Date ↓</option>
+            <option value="date_asc">Date ↑</option>
+            <option value="likes_desc">Likes ↓</option>
+            <option value="likes_asc">Likes ↑</option>
+            <option value="comments_desc">Comments ↓</option>
+            <option value="comments_asc">Comments ↑</option>
+          </select>
           <button onclick="bdLoadAnalytics()" style="padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;background:var(--accent);color:#fff;border:0">Load Analytics</button>
           <button onclick="bdTriggerScrape()" style="padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;background:var(--ink);color:#fff;border:0">⚡ Trigger Scrape</button>
         </div>
@@ -734,6 +723,21 @@ tr:hover td{background:#fafbfd}
 
         <div id="bd-user-detail" style="margin-top:14px"></div>
       </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>👥 Reviewers</h2><span class="count" id="cnt-users">0</span></div>
+      <div style="overflow-x:auto"><table id="tbl-users"><thead><tr><th>Handle</th><th>Joined</th><th>Last seen</th><th>IP</th><th>Assignments</th><th>Done</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>⚠️ Repost Inbox</h2><span class="count" id="cnt-reports">0</span></div>
+      <div id="list-reports"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>📋 Login Events</h2><span class="count" id="cnt-logins">0</span></div>
+      <div id="list-logins"></div>
     </div>
 
     <div class="section">
@@ -780,20 +784,6 @@ async function refresh(){
     <div class="kpi warn"><div class="lbl">In progress</div><div class="val">${s.assignments_in_progress}</div></div>
     <div class="kpi ${s.open_reports?'bad':''}"><div class="lbl">Open reports</div><div class="val">${s.open_reports}</div></div>
     <div class="kpi"><div class="lbl">Available comments</div><div class="val">${s.comments_available}</div></div>`;
-  // Kanban Posts
-  $('cnt-posts').textContent=d.posts.length;
-  $('tbl-posts').querySelector('tbody').innerHTML=d.posts.map(p=>{
-    const pct=p.comment_count?(p.done || 0)/p.comment_count*100:0;
-    return `<tr><td>${p.id}</td><td><b>${esc(p.title)}</b></td><td>${p.comment_count}</td><td>${p.assigned||0}</td><td>${p.done||0}</td><td><div class="progress"><div class="fill" style="width:${pct}%"></div></div> ${Math.round(pct)}%</td></tr>`;
-  }).join('')||'<tr><td colspan="6" class="empty">No posts yet</td></tr>';
-  // Bright Data Posts
-  if(d.bd_posts){
-    $('bd-posts').querySelector('tbody').innerHTML=d.bd_posts.map(p=>{
-      const dateStr=(p.date_posted||'').substring(0,10);
-      const desc=(p.description||'').substring(0,80);
-      return `<tr><td>${dateStr}</td><td><span class="badge muted">${esc(p.content_type||'')}</span></td><td>${p.likes||0}</td><td>${p.num_comments||0}</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(desc)}</td></tr>`;
-    }).join('')||'<tr><td colspan="5" class="empty">No Bright Data posts</td></tr>';
-  }
   // Users
   $('cnt-users').textContent=d.users.length;
   $('tbl-users').querySelector('tbody').innerHTML=d.users.map(u=>{
@@ -817,6 +807,23 @@ async function refresh(){
     const cls=e.event.includes('reject')?'r':e.event.includes('done')?'d':'p';
     return `<div class="evt"><span class="ts">${(e.at||'').substring(0,19)}</span><span class="tag ${cls}">${esc(e.event)}</span><b>@${esc(e.handle||'system')}</b> · <span style="color:var(--muted)">${esc(e.detail||'')}</span></div>`;
   }).join(''):'<div class="empty">No events yet</div>';
+  // Populate month filter from bd_posts
+  if(d.bd_posts){
+    const months=new Set();
+    d.bd_posts.forEach(p=>{
+      const m=(p.date_posted||'').substring(0,7);
+      if(m) months.add(m);
+    });
+    const sortedMonths=Array.from(months).sort().reverse();
+    const sel=$('bd-month-filter');
+    const cur=sel.value;
+    sel.innerHTML='<option value="">All months</option>'+sortedMonths.map(m=>`<option value="${m}">${m}</option>`).join('');
+    // Default to active month (latest month in data)
+    if(sortedMonths.length && !cur){
+      sel.value=sortedMonths[0];
+      bdLoadAnalytics(); // Auto-load with default month
+    }
+  }
 }
 
 window.doAdminLogin=doAdminLogin; window.doAdminLogout=doAdminLogout;
@@ -824,13 +831,20 @@ window.doAdminLogin=doAdminLogin; window.doAdminLogout=doAdminLogout;
 // === BRIGHT DATA ANALYTICS ===
 async function bdLoadAnalytics(){
   const profile=$('bd-profile').value.trim()||'duniameutya';
-  const start=$('bd-start').value.trim();
-  const end=$('bd-end').value.trim();
+  const month=$('bd-month-filter').value; // YYYY-MM
+  const sort=$('bd-sort').value; // date_desc, date_asc, likes_desc, likes_asc, comments_desc, comments_asc
   $('bd-status').textContent='Loading...';
   try{
     const body={profile};
-    if(start)body.start_date=start;
-    if(end)body.end_date=end;
+    if(month){
+      // Convert YYYY-MM to start/end dates
+      const [y,m]=month.split('-');
+      const start=`01-${m}-${y}`;
+      const lastDay=new Date(parseInt(y),parseInt(m),0).getDate();
+      const end=`${lastDay}-${m}-${y}`;
+      body.start_date=start;
+      body.end_date=end;
+    }
     const d=await api('/api/admin/bd-analytics',{method:'POST',body:JSON.stringify(body)});
     // KPIs
     $('bd-kpis').innerHTML=`
@@ -838,12 +852,17 @@ async function bdLoadAnalytics(){
       <div class="kpi good"><div class="lbl">Comments</div><div class="val">${d.total_comments}</div></div>
       <div class="kpi"><div class="lbl">Unique Commenters</div><div class="val">${d.unique_commenters}</div></div>
       <div class="kpi"><div class="lbl">Avg Comments/Post</div><div class="val">${d.total_posts?Math.round(d.total_comments/d.total_posts):0}</div></div>`;
+    // Sort posts_summary based on sort option
+    let posts=d.posts_summary||[];
+    if(sort.startsWith('date')) posts.sort((a,b)=>sort.endsWith('desc')?new Date(b.date_posted)-new Date(a.date_posted):new Date(a.date_posted)-new Date(b.date_posted));
+    else if(sort.startsWith('likes')) posts.sort((a,b)=>sort.endsWith('desc')?(b.likes||0)-(a.likes||0):(a.likes||0)-(b.likes||0));
+    else if(sort.startsWith('comments')) posts.sort((a,b)=>sort.endsWith('desc')?(b.num_comments||0)-(a.num_comments||0):(a.num_comments||0)-(b.num_comments||0));
     // Top commenters
     $('bd-top-commenters').querySelector('tbody').innerHTML=d.top_commenters.map((u,i)=>
       `<tr><td>${i+1}</td><td><b>@${esc(u.username)}</b></td><td>${u.comment_count}</td><td>${u.total_likes||0}</td><td>${relTime(u.last_comment_date)}</td><td><button onclick="bdShowUser('${esc(u.username)}')" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:#fff;font-weight:600">View</button></td></tr>`
     ).join('')||'<tr><td colspan="6" class="empty">No data. Run a scrape first.</td></tr>';
     // Posts
-    $('bd-posts').querySelector('tbody').innerHTML=d.posts_summary.map(p=>{
+    $('bd-posts').querySelector('tbody').innerHTML=posts.map(p=>{
       const desc=(p.description||'').substring(0,80);
       const dateStr=(p.date_posted||'').substring(0,10);
       const scraped=p.scraped_comments||0;
