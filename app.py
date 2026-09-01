@@ -692,10 +692,10 @@ tr:hover td{background:#fafbfd}
       <div style="padding:14px 18px">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
           <input id="bd-profile" placeholder="IG username (e.g. duniameutya)" value="duniameutya" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:180px">
-          <select id="bd-month-filter" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:160px">
+          <select id="bd-month-filter" onchange="bdLoadAnalytics()" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:160px">
             <option value="">All months</option>
           </select>
-          <select id="bd-sort" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:160px">
+          <select id="bd-sort" onchange="bdLoadAnalytics()" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:160px">
             <option value="date_desc">Date ↓</option>
             <option value="date_asc">Date ↑</option>
             <option value="likes_desc">Likes ↓</option>
