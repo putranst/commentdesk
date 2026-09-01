@@ -1684,7 +1684,6 @@ class Handler(BaseHTTPRequestHandler):
                 if not admin:
                     return self._json(401, {"error": "Admin auth required"})
                 # Run refresh in background
-                import threading
                 def do_refresh():
                     refresh_instagram_thumbnails()
                 threading.Thread(target=do_refresh, daemon=True).start()
